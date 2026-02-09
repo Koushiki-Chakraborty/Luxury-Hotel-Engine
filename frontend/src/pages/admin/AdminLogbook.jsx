@@ -104,7 +104,7 @@ const AdminLogbook = () => {
       
       // Reset form
       setFormData({
-        date: new Date().toISOString().split('T')[0],
+        date: new Date().toLocaleDateString('en-CA'),
         source: 'Walk-in',
         category: 'Room',
         roomNumber: '',
@@ -212,10 +212,49 @@ const AdminLogbook = () => {
   };
 
   // Delete log wrapper
-  const handleDeleteClick = (id) => {
-    openConfirmModal('delete', id);
-  };
+  // CSV Export
+  const downloadCSV = () => {
+    if (logs.length === 0) {
+      alert('No logs to export');
+      return;
+    }
 
+    // CSV Header
+    const headers = ['Date', 'Source', 'Category', 'Room No', 'Customer Name', 'Description', 'Units', 'Days', 'Unit Price', 'Total Amount', 'Status'];
+    
+    // CSV Rows
+    const rows = logs.map(log => [
+      new Date(log.date).toLocaleDateString('en-CA'),
+      log.source,
+      log.category,
+      log.roomNumber || '-',
+      log.customerName || '-',
+      `"${log.description || ''}"`, // Quote description to handle commas
+      log.units,
+      log.duration,
+      log.unitPrice,
+      log.totalAmount,
+      log.status
+    ]);
+
+    // Construct CSV content
+    const csvContent = [
+      headers.join(','),
+      ...rows.map(row => row.join(','))
+    ].join('\n');
+
+    // Create Download Link
+    const blob = new Blob([csvContent], { type: 'text/csv' });
+    const url = window.URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `Logbook_${new Date().toLocaleDateString('en-CA')}.csv`;
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    window.URL.revokeObjectURL(url);
+  };
+  
   // Format date for display
   const formatDate = (dateString) => {
     return new Date(dateString).toLocaleDateString('en-IN', {
@@ -232,17 +271,26 @@ const AdminLogbook = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
+          className="mb-8 flex justify-between items-end"
         >
-          <div className="flex items-center gap-3 mb-2">
-            <BookOpen className="text-champagne-gold" size={32} />
-            <h1 className="text-3xl font-playfair font-bold text-deep-charcoal">
-              Digital Logbook
-            </h1>
+          <div>
+            <div className="flex items-center gap-3 mb-2">
+              <BookOpen className="text-champagne-gold" size={32} />
+              <h1 className="text-3xl font-playfair font-bold text-deep-charcoal">
+                Digital Logbook
+              </h1>
+            </div>
+            <p className="text-rich-espresso font-lato">
+              Manual Property Management System - Track all revenue entries
+            </p>
           </div>
-          <p className="text-rich-espresso font-lato">
-            Manual Property Management System - Track all revenue entries
-          </p>
+          <button
+            onClick={downloadCSV}
+            className="flex items-center gap-2 px-4 py-2 bg-success-green/10 text-success-green border border-success-green/30 rounded-lg hover:bg-success-green/20 transition-colors font-semibold"
+          >
+            <TrendingUp size={18} />
+            Download CSV
+          </button>
         </motion.div>
 
         {/* Quick Entry Form */}

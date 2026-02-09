@@ -20,7 +20,6 @@ const AdminRooms = () => {
     roomNumber: '',
     type: '',
     price: '',
-    originalPrice: '',
     capacity: 2,
     isFeatured: false,
     status: 'Available',
@@ -98,7 +97,6 @@ const AdminRooms = () => {
       roomNumber: '',
       type: '',
       price: '',
-      originalPrice: '',
       capacity: 2,
       isFeatured: false,
       status: 'Available',
@@ -112,29 +110,8 @@ const AdminRooms = () => {
   const handleFormChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     
-    // Real-time validation for price vs originalPrice
-    if (field === 'price' || field === 'originalPrice') {
-      const newFormData = { ...formData, [field]: value };
-      
-      // Only validate if both fields have valid values
-      if (newFormData.price !== '' && newFormData.originalPrice !== '') {
-        const price = Number(newFormData.price);
-        const originalPrice = Number(newFormData.originalPrice);
-        
-        if (!isNaN(price) && !isNaN(originalPrice) && price > originalPrice) {
-          setFormErrors(prev => ({
-            ...prev,
-            price: `Current price cannot exceed the original price (₹${originalPrice.toLocaleString('en-IN')})`
-          }));
-        } else {
-          // Clear price error if validation passes
-          setFormErrors(prev => ({ ...prev, price: '' }));
-        }
-      }
-    }
-    
-    // Clear error for other fields
-    if (formErrors[field] && field !== 'price') {
+    // Clear error for field
+    if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
     }
   };
@@ -178,19 +155,6 @@ const AdminRooms = () => {
       errors.price = 'Price must be greater than 0';
     }
 
-    if (!formData.originalPrice || formData.originalPrice <= 0) {
-      errors.originalPrice = 'Original price must be greater than 0';
-    }
-
-    if (formData.price && formData.originalPrice) {
-      const price = Number(formData.price);
-      const originalPrice = Number(formData.originalPrice);
-      
-      if (price > originalPrice) {
-        errors.price = `Current price cannot exceed the original price (₹${originalPrice.toLocaleString('en-IN')})`;
-      }
-    }
-
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
@@ -200,7 +164,6 @@ const AdminRooms = () => {
     data.append('roomNumber', formData.roomNumber);
     data.append('type', formData.type);
     data.append('price', formData.price);
-    data.append('originalPrice', formData.originalPrice);
     data.append('capacity', formData.capacity);
     data.append('isFeatured', formData.isFeatured);
     data.append('status', formData.status);
@@ -282,7 +245,6 @@ const AdminRooms = () => {
       roomNumber: room.roomNumber,
       type: room.type,
       price: room.price,
-      originalPrice: room.originalPrice,
       capacity: room.capacity || 2,
       isFeatured: room.isFeatured || false,
       status: room.status,
@@ -355,9 +317,7 @@ const AdminRooms = () => {
 
   const isFormValid = formData.roomNumber.trim() && 
                       formData.type && 
-                      formData.price > 0 && 
-                      formData.originalPrice > 0 &&
-                      Number(formData.price) <= Number(formData.originalPrice);
+                      formData.price > 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -523,15 +483,7 @@ const AdminRooms = () => {
                         <div className="flex items-center justify-between">
                           <div className="flex items-baseline gap-2">
                             <span className="text-2xl font-bold text-deep-charcoal">{room.priceINR}</span>
-                            {room.discountPercentage > 0 && (
-                              <span className="text-sm line-through text-soft-taupe">{room.originalPriceINR}</span>
-                            )}
                           </div>
-                          {room.discountPercentage > 0 && (
-                            <span className="text-sm font-semibold text-success-green bg-success-green/10 px-2 py-1 rounded">
-                              {room.discountPercentage}% OFF
-                            </span>
-                          )}
                         </div>
 
                         {/* Action Buttons - Large and Touch-Friendly */}
@@ -578,12 +530,6 @@ const AdminRooms = () => {
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
                       Price
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                      Original Price
-                    </th>
-                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                      Discount
                     </th>
                     <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
                       Status
@@ -640,20 +586,6 @@ const AdminRooms = () => {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span className="text-sm font-semibold text-deep-charcoal">{room.priceINR}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          <span className="text-sm text-soft-taupe line-through">{room.originalPriceINR}</span>
-                        </td>
-                        <td className="px-6 py-4 whitespace-nowrap">
-                          {room.discountPercentage > 0 ? (
-                            <span className="text-sm font-semibold text-success-green">
-                              {room.discountPercentage}% OFF
-                            </span>
-                          ) : (
-                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-soft-taupe/10 text-soft-taupe border-soft-taupe">
-                              No Discount
-                            </span>
-                          )}
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap">
                           <span
@@ -796,25 +728,7 @@ const AdminRooms = () => {
                       )}
                     </div>
 
-                    {/* Original Price */}
-                    <div>
-                      <label className="block text-sm font-medium text-deep-charcoal mb-2">
-                        Original Price (₹) <span className="text-error-burgundy">*</span>
-                      </label>
-                      <input
-                        type="number"
-                        value={formData.originalPrice}
-                        onChange={(e) => handleFormChange('originalPrice', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.originalPrice ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
-                        placeholder="7000"
-                        min="0"
-                      />
-                      {formErrors.originalPrice && (
-                        <p className="text-error-burgundy text-xs mt-1">{formErrors.originalPrice}</p>
-                      )}
-                    </div>
+
                   </div>
 
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4">

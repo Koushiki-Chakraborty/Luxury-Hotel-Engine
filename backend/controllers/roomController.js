@@ -6,25 +6,24 @@ const cloudinary = require('../config/cloudinary');
 // @access  Private (Admin only)
 exports.createRoom = async (req, res, next) => {
   try {
-    const { roomNumber, type, price, originalPrice, amenities, description, images, status } = req.body;
+    const { roomNumber, type, price, amenities, description, images, status } = req.body;
 
     // Validate required fields
-    if (!roomNumber || !type || price === undefined || originalPrice === undefined) {
+    if (!roomNumber || !type || price === undefined) {
       return res.status(400).json({
         success: false,
-        message: 'Please provide all required fields: roomNumber, type, price, originalPrice'
+        message: 'Please provide all required fields: roomNumber, type, price'
       });
     }
 
     // Parse prices to numbers (FormData sends them as strings)
     const priceNum = Number(price);
-    const originalPriceNum = Number(originalPrice);
 
-    // Validate price <= originalPrice
-    if (!isNaN(priceNum) && !isNaN(originalPriceNum) && priceNum > originalPriceNum) {
+    // Validate price
+    if (isNaN(priceNum) || priceNum < 0) {
       return res.status(400).json({
         success: false,
-        message: 'Price cannot be greater than original price'
+        message: 'Please provide a valid price'
       });
     }
 
@@ -51,7 +50,6 @@ exports.createRoom = async (req, res, next) => {
       roomNumber,
       type,
       price: priceNum,
-      originalPrice: originalPriceNum,
       amenities: amenities || [],
       description,
       images: imageUrls,
@@ -157,7 +155,7 @@ exports.getRoomById = async (req, res, next) => {
 // @access  Private (Admin only)
 exports.updateRoom = async (req, res, next) => {
   try {
-    const { price, originalPrice, roomNumber } = req.body;
+    const { price, roomNumber } = req.body;
 
     // Find room
     let room = await Room.findById(req.params.id);
@@ -170,9 +168,6 @@ exports.updateRoom = async (req, res, next) => {
     }
 
     // Process images
-    // Frontend sends:
-    // - existingImages: JSON array of URLs to keep
-    // - images (via req.files): new File objects to upload
     let imageUrls = [];
     
     // Parse existing images from frontend
@@ -194,23 +189,11 @@ exports.updateRoom = async (req, res, next) => {
     }
 
     // Identify images to delete from Cloudinary
-    // Logic: Existing Room Images NOT in the new imageUrls array should be deleted
-    // Note: imageUrls contains the FINAL state of desired images (both kept existing + new ones)
     const imagesToDelete = room.images.filter(imgUrl => !imageUrls.includes(imgUrl));
 
     if (imagesToDelete.length > 0) {
         imagesToDelete.forEach(async (imageUrl) => {
             try {
-                // Extract public_id from URL
-                // Example: https://res.cloudinary.com/cloudname/image/upload/v1234/folder/filename.jpg
-                // Public ID: folder/filename (without extension)
-                const parts = imageUrl.split('/');
-                const filename = parts[parts.length - 1];
-                const publicIdWithExt = filename.split('.')[0];
-                const folder = parts[parts.length - 2];
-                // Assuming folder structure is simple, usually it's best to store public_id in DB, but extracting works for standard setups
-                // Better approach: regex to get everything after 'upload/v<version>/' and before extension
-
                 const regex = /\/upload\/(?:v\d+\/)?(.+)\.[^.]+$/;
                 const match = imageUrl.match(regex);
                 
@@ -240,40 +223,12 @@ exports.updateRoom = async (req, res, next) => {
     }
 
     // Parse prices if provided
-    let priceNum, originalPriceNum;
+    let priceNum;
     if (price !== undefined) priceNum = Number(price);
-    if (originalPrice !== undefined) originalPriceNum = Number(originalPrice);
-
-    // Validate price <= originalPrice if both are provided
-    if (priceNum !== undefined && originalPriceNum !== undefined) {
-      if (priceNum > originalPriceNum) {
-        return res.status(400).json({
-          success: false,
-          message: 'Price cannot be greater than original price'
-        });
-      }
-    }
-
-    // If only price is being updated, check against existing originalPrice
-    if (priceNum !== undefined && originalPriceNum === undefined && priceNum > room.originalPrice) {
-      return res.status(400).json({
-        success: false,
-        message: `Price (₹${priceNum}) cannot be greater than original price (₹${room.originalPrice})`
-      });
-    }
-
-    // If only originalPrice is being updated, check against existing price
-    if (originalPriceNum !== undefined && priceNum === undefined && room.price > originalPriceNum) {
-      return res.status(400).json({
-        success: false,
-        message: `Original price (₹${originalPriceNum}) cannot be less than current price (₹${room.price})`
-      });
-    }
 
     // Construct update object
     const updateData = { ...req.body };
     if (priceNum !== undefined) updateData.price = priceNum;
-    if (originalPriceNum !== undefined) updateData.originalPrice = originalPriceNum;
     updateData.images = imageUrls;
 
     // Update room
