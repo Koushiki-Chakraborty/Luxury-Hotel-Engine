@@ -21,6 +21,8 @@ const AdminRooms = () => {
     type: '',
     price: '',
     originalPrice: '',
+    capacity: 2,
+    isFeatured: false,
     status: 'Available',
     amenities: [],
     description: '',
@@ -97,6 +99,8 @@ const AdminRooms = () => {
       type: '',
       price: '',
       originalPrice: '',
+      capacity: 2,
+      isFeatured: false,
       status: 'Available',
       amenities: [],
       description: '',
@@ -197,6 +201,8 @@ const AdminRooms = () => {
     data.append('type', formData.type);
     data.append('price', formData.price);
     data.append('originalPrice', formData.originalPrice);
+    data.append('capacity', formData.capacity);
+    data.append('isFeatured', formData.isFeatured);
     data.append('status', formData.status);
     data.append('description', formData.description);
 
@@ -205,9 +211,28 @@ const AdminRooms = () => {
       data.append('amenities', amenity);
     });
 
-    // Append images
+    // Smart image handling: separate existing URLs from new Files
+    const existingUrls = [];
+    const newFiles = [];
+
     formData.images.forEach(image => {
-      data.append('images', image);
+      if (typeof image === 'string') {
+        // Existing Cloudinary URL
+        existingUrls.push(image);
+      } else if (image instanceof File) {
+        // New file to upload
+        newFiles.push(image);
+      }
+    });
+
+    // Append existing URLs as JSON
+    if (existingUrls.length > 0) {
+      data.append('existingImages', JSON.stringify(existingUrls));
+    }
+
+    // Append new files for Cloudinary upload
+    newFiles.forEach(file => {
+      data.append('images', file);
     });
 
     return data;
@@ -258,6 +283,8 @@ const AdminRooms = () => {
       type: room.type,
       price: room.price,
       originalPrice: room.originalPrice,
+      capacity: room.capacity || 2,
+      isFeatured: room.isFeatured || false,
       status: room.status,
       amenities: room.amenities || [],
       description: room.description || '',
@@ -344,16 +371,17 @@ const AdminRooms = () => {
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleAddRoomClick}
-          className="flex items-center gap-2 px-6 py-3 bg-champagne-gold text-deep-charcoal font-semibold rounded-lg hover:bg-muted-gold transition-colors shadow-luxury"
+          className="flex items-center gap-2 px-4 md:px-6 py-3 bg-champagne-gold text-deep-charcoal font-semibold rounded-lg hover:bg-muted-gold transition-colors shadow-luxury"
         >
           <Plus className="w-5 h-5" />
-          ₹ Add New Room
+          <span className="hidden sm:inline">Add New Room</span>
+          <span className="sm:hidden">Add</span>
         </motion.button>
       </div>
 
       {/* Stats Cards */}
       {stats && (
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+        <div className="grid grid-cols-2 md:grid-cols-3 gap-4 md:gap-6">
           {/* Total Rooms */}
           <motion.div
             initial={{ opacity: 0, y: 20 }}
@@ -413,7 +441,7 @@ const AdminRooms = () => {
         </div>
       )}
 
-      {/* Rooms Table */}
+      {/* Rooms Table/Cards */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -431,128 +459,240 @@ const AdminRooms = () => {
             <p className="text-soft-taupe/70 text-sm mt-2">Add your first room to get started</p>
           </div>
         ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-warm-cream border-b border-pale-champagne">
-                <tr>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Room Number
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Image
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Type
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Price
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Original Price
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Discount
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Status
-                  </th>
-                  <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
-                    Actions
-                  </th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-pale-champagne">
+          <>
+            {/* Mobile Card View */}
+            <div className="block md:hidden">
+              <div className="p-4 space-y-4">
                 <AnimatePresence>
                   {rooms.map((room) => (
-                    <motion.tr
+                    <motion.div
                       key={room._id}
-                      initial={{ opacity: 0 }}
-                      animate={{ opacity: 1 }}
+                      initial={{ opacity: 0, y: 10 }}
+                      animate={{ opacity: 1, y: 0 }}
                       exit={{ opacity: 0, x: -20 }}
                       transition={{ duration: 0.2 }}
-                      className="hover:bg-warm-cream/50 transition-colors"
+                      className="bg-warm-cream border-2 border-pale-champagne rounded-lg overflow-hidden shadow-luxury hover:shadow-luxury-hover transition-shadow"
                     >
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-deep-charcoal">{room.roomNumber}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="w-16 h-10 rounded-lg overflow-hidden border border-pale-champagne bg-soft-taupe/10 relative group">
-                          {room.images && room.images.length > 0 ? (
-                            <img 
-                              src={room.images[0]} 
-                              alt={`Room ${room.roomNumber}`}
-                              className="w-full h-full object-cover"
-                              onError={(e) => {
-                                e.target.style.display = 'none';
-                                e.target.nextSibling.style.display = 'flex';
-                              }}
-                            />
-                          ) : null}
-                          <div 
-                            className="absolute inset-0 items-center justify-center bg-soft-ivory" 
-                            style={{ display: room.images && room.images.length > 0 ? 'none' : 'flex' }}
-                          >
-                             <ImageIcon className="w-4 h-4 text-champagne-gold/50" />
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-soft-taupe">{room.type}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm font-semibold text-deep-charcoal">{room.priceINR}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className="text-sm text-soft-taupe line-through">{room.originalPriceINR}</span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {room.discountPercentage > 0 ? (
-                          <span className="text-sm font-semibold text-success-green">
-                            {room.discountPercentage}% OFF
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-soft-taupe/10 text-soft-taupe border-soft-taupe">
-                            No Discount
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span
-                          className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeStyles(
-                            room.status
-                          )}`}
+                      {/* Room Image - Fixed Aspect Ratio */}
+                      <div className="relative aspect-video bg-soft-taupe/10">
+                        {room.images && room.images.length > 0 ? (
+                          <img 
+                            src={room.images[0]} 
+                            alt={`Room ${room.roomNumber}`}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.style.display = 'none';
+                              e.target.nextSibling.style.display = 'flex';
+                            }}
+                          />
+                        ) : null}
+                        <div 
+                          className="absolute inset-0 items-center justify-center bg-soft-ivory" 
+                          style={{ display: room.images && room.images.length > 0 ? 'none' : 'flex' }}
                         >
-                          {room.status}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
-                            onClick={() => handleEditClick(room)}
-                            className="p-2 text-info-navy hover:bg-info-navy/10 rounded-lg transition-colors"
-                            title="Edit Room"
+                          <ImageIcon className="w-12 h-12 text-champagne-gold/50" />
+                        </div>
+                        
+                        {/* Status Badge - Overlay on Image with Semi-Transparent Background */}
+                        <div className="absolute top-3 right-3">
+                          <span
+                            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm bg-soft-ivory/90 border-2 shadow-lg ${
+                              room.status === 'Available'
+                                ? 'border-success-green text-success-green'
+                                : room.status === 'Booked'
+                                ? 'border-info-navy text-info-navy'
+                                : 'border-soft-taupe text-soft-taupe'
+                            }`}
                           >
-                            <Edit className="w-4 h-4" />
+                            {room.status}
+                          </span>
+                        </div>
+                      </div>
+
+                      {/* Room Info */}
+                      <div className="p-4 space-y-3">
+                        {/* Title */}
+                        <div>
+                          <h3 className="text-xl font-playfair font-bold text-deep-charcoal">
+                            Room {room.roomNumber}
+                          </h3>
+                          <p className="text-soft-taupe text-sm mt-0.5">{room.type}</p>
+                        </div>
+
+                        {/* Price Info */}
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-baseline gap-2">
+                            <span className="text-2xl font-bold text-deep-charcoal">{room.priceINR}</span>
+                            {room.discountPercentage > 0 && (
+                              <span className="text-sm line-through text-soft-taupe">{room.originalPriceINR}</span>
+                            )}
+                          </div>
+                          {room.discountPercentage > 0 && (
+                            <span className="text-sm font-semibold text-success-green bg-success-green/10 px-2 py-1 rounded">
+                              {room.discountPercentage}% OFF
+                            </span>
+                          )}
+                        </div>
+
+                        {/* Action Buttons - Large and Touch-Friendly */}
+                        <div className="flex gap-3 pt-2">
+                          <motion.button
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
+                            onClick={() => handleEditClick(room)}
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-champagne-gold text-deep-charcoal font-semibold rounded-lg hover:bg-muted-gold transition-colors shadow-md"
+                          >
+                            <Edit className="w-5 h-5" />
+                            <span>Edit</span>
                           </motion.button>
                           <motion.button
-                            whileHover={{ scale: 1.1 }}
-                            whileTap={{ scale: 0.9 }}
+                            whileHover={{ scale: 1.02 }}
+                            whileTap={{ scale: 0.98 }}
                             onClick={() => handleDeleteClick(room)}
-                            className="p-2 text-error-burgundy hover:bg-error-burgundy/10 rounded-lg transition-colors"
-                            title="Delete Room"
+                            className="flex-1 flex items-center justify-center gap-2 px-4 py-3 bg-[#A05050] text-white font-semibold rounded-lg hover:bg-[#8B4545] transition-colors shadow-md"
                           >
-                            <Trash2 className="w-4 h-4" />
+                            <Trash2 className="w-5 h-5" />
+                            <span>Delete</span>
                           </motion.button>
                         </div>
-                      </td>
-                    </motion.tr>
+                      </div>
+                    </motion.div>
                   ))}
                 </AnimatePresence>
-              </tbody>
-            </table>
-          </div>
+              </div>
+            </div>
+
+            {/* Desktop Table View */}
+            <div className="hidden md:block overflow-x-auto">
+              <table className="w-full">
+                <thead className="bg-warm-cream border-b border-pale-champagne">
+                  <tr>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Room Number
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Image
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Type
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Price
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Original Price
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Discount
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Status
+                    </th>
+                    <th className="px-6 py-4 text-left text-xs font-semibold text-deep-charcoal uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-pale-champagne">
+                  <AnimatePresence>
+                    {rooms.map((room) => (
+                      <motion.tr
+                        key={room._id}
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0, x: -20 }}
+                        transition={{ duration: 0.2 }}
+                        className="hover:bg-warm-cream/50 transition-colors"
+                      >
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <span className="text-sm font-semibold text-deep-charcoal">{room.roomNumber}</span>
+                            {room.isFeatured && (
+                              <span className="text-xs bg-champagne-gold/20 text-champagne-gold px-2 py-0.5 rounded-full font-medium">
+                                ⭐ Featured
+                              </span>
+                            )}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="w-16 h-10 rounded-lg overflow-hidden border border-pale-champagne bg-soft-taupe/10 relative group">
+                            {room.images && room.images.length > 0 ? (
+                              <img 
+                                src={room.images[0]} 
+                                alt={`Room ${room.roomNumber}`}
+                                className="w-full h-full object-cover"
+                                onError={(e) => {
+                                  e.target.style.display = 'none';
+                                  e.target.nextSibling.style.display = 'flex';
+                                }}
+                              />
+                            ) : null}
+                            <div 
+                              className="absolute inset-0 items-center justify-center bg-soft-ivory" 
+                              style={{ display: room.images && room.images.length > 0 ? 'none' : 'flex' }}
+                            >
+                               <ImageIcon className="w-4 h-4 text-champagne-gold/50" />
+                            </div>
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-soft-taupe">{room.type}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm font-semibold text-deep-charcoal">{room.priceINR}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span className="text-sm text-soft-taupe line-through">{room.originalPriceINR}</span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          {room.discountPercentage > 0 ? (
+                            <span className="text-sm font-semibold text-success-green">
+                              {room.discountPercentage}% OFF
+                            </span>
+                          ) : (
+                            <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border bg-soft-taupe/10 text-soft-taupe border-soft-taupe">
+                              No Discount
+                            </span>
+                          )}
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <span
+                            className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-medium border ${getStatusBadgeStyles(
+                              room.status
+                            )}`}
+                          >
+                            {room.status}
+                          </span>
+                        </td>
+                        <td className="px-6 py-4 whitespace-nowrap">
+                          <div className="flex items-center gap-2">
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleEditClick(room)}
+                              className="p-2 text-info-navy hover:bg-info-navy/10 rounded-lg transition-colors"
+                              title="Edit Room"
+                            >
+                              <Edit className="w-4 h-4" />
+                            </motion.button>
+                            <motion.button
+                              whileHover={{ scale: 1.1 }}
+                              whileTap={{ scale: 0.9 }}
+                              onClick={() => handleDeleteClick(room)}
+                              className="p-2 text-error-burgundy hover:bg-error-burgundy/10 rounded-lg transition-colors"
+                              title="Delete Room"
+                            >
+                              <Trash2 className="w-4 h-4" />
+                            </motion.button>
+                          </div>
+                        </td>
+                      </motion.tr>
+                    ))}
+                  </AnimatePresence>
+                </tbody>
+              </table>
+            </div>
+          </>
         )}
       </motion.div>
 
@@ -571,7 +711,7 @@ const AdminRooms = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-soft-ivory border-2 border-pale-champagne rounded-lg shadow-luxury-hover max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-soft-ivory border-2 border-pale-champagne rounded-lg shadow-luxury-hover w-full md:max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="sticky top-0 bg-soft-ivory border-b border-pale-champagne p-6 flex items-center justify-between">
                 <h3 className="text-2xl font-playfair font-bold text-deep-charcoal">Add New Room</h3>
@@ -677,19 +817,59 @@ const AdminRooms = () => {
                     </div>
                   </div>
 
-                  {/* Status */}
-                  <div>
-                    <label className="block text-sm font-medium text-deep-charcoal mb-2">
-                      Status <span className="text-error-burgundy">*</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Capacity */}
+                    <div>
+                      <label className="block text-sm font-medium text-deep-charcoal mb-2">
+                        Capacity (Guests) <span className="text-error-burgundy">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.capacity}
+                        onChange={(e) => handleFormChange('capacity', e.target.value)}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
+                          formErrors.capacity ? 'border-error-burgundy' : 'border-pale-champagne'
+                        }`}
+                        placeholder="2"
+                        min="1"
+                        max="10"
+                      />
+                      {formErrors.capacity && (
+                        <p className="text-error-burgundy text-xs mt-1">{formErrors.capacity}</p>
+                      )}
+                      <p className="text-soft-taupe text-xs mt-1">Maximum number of guests this room can accommodate</p>
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <label className="block text-sm font-medium text-deep-charcoal mb-2">
+                        Status <span className="text-error-burgundy">*</span>
+                      </label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => handleFormChange('status', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-pale-champagne rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold"
+                      >
+                        <option value="Available">Available</option>
+                        <option value="Maintenance">Maintenance</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Featured Toggle */}
+                  <div className="mt-4">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isFeatured}
+                        onChange={(e) => handleFormChange('isFeatured', e.target.checked)}
+                        className="w-5 h-5 text-champagne-gold focus:ring-champagne-gold border-pale-champagne rounded"
+                      />
+                      <div>
+                        <span className="text-sm font-medium text-deep-charcoal">⭐ Feature this Room</span>
+                        <p className="text-xs text-soft-taupe mt-1">Note: Only the first 3 featured rooms will appear on the Homepage.</p>
+                      </div>
                     </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => handleFormChange('status', e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-pale-champagne rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold"
-                    >
-                      <option value="Available">Available</option>
-                      <option value="Maintenance">Maintenance</option>
-                    </select>
                   </div>
                 </div>
 
@@ -812,7 +992,13 @@ const AdminRooms = () => {
                             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                             className="w-5 h-5 border-2 border-deep-charcoal border-t-transparent rounded-full"
                           />
-                          {uploadProgress > 0 ? `Uploading Images... ${uploadProgress}%` : 'Uploading Images...'}
+                          {(() => {
+                            const hasNewImages = formData.images.some(img => img instanceof File);
+                            if (hasNewImages && uploadProgress > 0) {
+                              return `Uploading Images... ${uploadProgress}%`;
+                            }
+                            return 'Creating Room...';
+                          })()}
                         </>
                       ) : (
                         <>
@@ -844,7 +1030,7 @@ const AdminRooms = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-soft-ivory border-2 border-pale-champagne rounded-lg shadow-luxury-hover max-w-2xl w-full max-h-[90vh] overflow-y-auto"
+              className="bg-soft-ivory border-2 border-pale-champagne rounded-lg shadow-luxury-hover w-full md:max-w-2xl max-h-[90vh] overflow-y-auto"
             >
               <div className="sticky top-0 bg-soft-ivory border-b border-pale-champagne p-6 flex items-center justify-between">
                 <h3 className="text-2xl font-playfair font-bold text-deep-charcoal">Edit Room</h3>
@@ -950,20 +1136,60 @@ const AdminRooms = () => {
                     </div>
                   </div>
 
-                  {/* Status */}
-                  <div>
-                    <label className="block text-sm font-medium text-deep-charcoal mb-2">
-                      Status <span className="text-error-burgundy">*</span>
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    {/* Capacity */}
+                    <div>
+                      <label className="block text-sm font-medium text-deep-charcoal mb-2">
+                        Capacity (Guests) <span className="text-error-burgundy">*</span>
+                      </label>
+                      <input
+                        type="number"
+                        value={formData.capacity}
+                        onChange={(e) => handleFormChange('capacity', e.target.value)}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
+                          formErrors.capacity ? 'border-error-burgundy' : 'border-pale-champagne'
+                        }`}
+                        placeholder="2"
+                        min="1"
+                        max="10"
+                      />
+                      {formErrors.capacity && (
+                        <p className="text-error-burgundy text-xs mt-1">{formErrors.capacity}</p>
+                      )}
+                      <p className="text-soft-taupe text-xs mt-1">Maximum number of guests this room can accommodate</p>
+                    </div>
+
+                    {/* Status */}
+                    <div>
+                      <label className="block text-sm font-medium text-deep-charcoal mb-2">
+                        Status <span className="text-error-burgundy">*</span>
+                      </label>
+                      <select
+                        value={formData.status}
+                        onChange={(e) => handleFormChange('status', e.target.value)}
+                        className="w-full px-4 py-2 border-2 border-pale-champagne rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold"
+                      >
+                        <option value="Available">Available</option>
+                        <option value="Booked">Booked</option>
+                        <option value="Maintenance">Maintenance</option>
+                      </select>
+                    </div>
+                  </div>
+
+                  {/* Featured Toggle */}
+                  <div className="mt-4">
+                    <label className="flex items-center space-x-3 cursor-pointer">
+                      <input
+                        type="checkbox"
+                        checked={formData.isFeatured}
+                        onChange={(e) => handleFormChange('isFeatured', e.target.checked)}
+                        className="w-5 h-5 text-champagne-gold focus:ring-champagne-gold border-pale-champagne rounded"
+                      />
+                      <div>
+                        <span className="text-sm font-medium text-deep-charcoal">⭐ Feature this Room</span>
+                        <p className="text-xs text-soft-taupe mt-1">Note: Only the first 3 featured rooms will appear on the Homepage.</p>
+                      </div>
                     </label>
-                    <select
-                      value={formData.status}
-                      onChange={(e) => handleFormChange('status', e.target.value)}
-                      className="w-full px-4 py-2 border-2 border-pale-champagne rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold"
-                    >
-                      <option value="Available">Available</option>
-                      <option value="Booked">Booked</option>
-                      <option value="Maintenance">Maintenance</option>
-                    </select>
                   </div>
                 </div>
 
@@ -1036,28 +1262,15 @@ const AdminRooms = () => {
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
                         {formData.images.map((image, index) => (
                           <div key={index} className="relative group aspect-video bg-soft-taupe/10 rounded-lg overflow-hidden border border-pale-champagne">
-                            {image ? (
-                                <img
-                                  src={
-                                    typeof image === 'string' 
-                                      ? image 
-                                      : URL.createObjectURL(image)
-                                  }
-                                  alt={`Room preview ${index + 1}`}
-                                  className="w-full h-full object-cover"
-                                  onError={(e) => {
-                                    e.target.style.display = 'none';
-                                    e.target.nextSibling.style.display = 'flex';
-                                  }}
-                                />
-                            ) : null}
-                            <div className="absolute inset-0 hidden items-center justify-center bg-soft-ivory" style={{ display: image ? 'none' : 'flex' }}>
-                                <ImageIcon className="w-8 h-8 text-champagne-gold/50" />
-                            </div>
+                            <img
+                              src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                              alt={`Room preview ${index + 1}`}
+                              className="w-full h-full object-cover"
+                            />
                             <button
                               type="button"
                               onClick={() => removeImage(index)}
-                              className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-error-burgundy opacity-0 group-hover:opacity-100 transition-opacity z-10"
+                              className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-error-burgundy opacity-0 group-hover:opacity-100 transition-opacity"
                             >
                               <X className="w-4 h-4" />
                             </button>
@@ -1099,7 +1312,13 @@ const AdminRooms = () => {
                             transition={{ duration: 1, repeat: Infinity, ease: 'linear' }}
                             className="w-5 h-5 border-2 border-deep-charcoal border-t-transparent rounded-full"
                           />
-                          {uploadProgress > 0 ? `Uploading Images... ${uploadProgress}%` : 'Uploading Images...'}
+                          {(() => {
+                            const hasNewImages = formData.images.some(img => img instanceof File);
+                            if (hasNewImages && uploadProgress > 0) {
+                              return `Uploading Images... ${uploadProgress}%`;
+                            }
+                            return 'Saving Changes...';
+                          })()}
                         </>
                       ) : (
                         <>
@@ -1131,7 +1350,7 @@ const AdminRooms = () => {
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
               onClick={(e) => e.stopPropagation()}
-              className="bg-soft-ivory border-2 border-pale-champagne rounded-lg shadow-luxury-hover max-w-md w-full p-6"
+              className="bg-soft-ivory border-2 border-pale-champagne rounded-lg shadow-luxury-hover w-full md:max-w-md p-6"
             >
               <div className="flex items-center justify-between mb-4">
                 <h3 className="text-xl font-playfair font-bold text-deep-charcoal">Confirm Delete</h3>
@@ -1174,14 +1393,14 @@ const AdminRooms = () => {
                 <button
                   onClick={() => setDeleteModal({ isOpen: false, room: null })}
                   disabled={isDeleting}
-                  className="flex-1 px-4 py-2 border-2 border-pale-champagne text-deep-charcoal font-semibold rounded-lg hover:bg-warm-cream transition-colors disabled:opacity-50"
+                  className="flex-1 px-4 py-3 border-2 border-pale-champagne text-deep-charcoal font-semibold rounded-lg hover:bg-warm-cream transition-colors disabled:opacity-50"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleDeleteConfirm}
                   disabled={isDeleting}
-                  className="flex-1 px-4 py-2 bg-error-burgundy text-white font-semibold rounded-lg hover:bg-error-burgundy/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
+                  className="flex-1 px-4 py-3 bg-error-burgundy text-white font-semibold rounded-lg hover:bg-error-burgundy/90 transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
                 >
                   {isDeleting ? (
                     <>

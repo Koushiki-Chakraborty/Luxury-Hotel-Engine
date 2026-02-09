@@ -3,7 +3,7 @@ const cors = require('cors');
 const dotenv = require('dotenv');
 const connectDB = require('./config/database');
 
-// Load environment variables
+// Load environment variables (touched to force restart)
 dotenv.config();
 
 // Initialize Express app
@@ -28,12 +28,20 @@ app.get('/', (req, res) => {
 // Import routes
 const adminRoutes = require('./routes/adminRoutes');
 const roomRoutes = require('./routes/roomRoutes');
+const restaurantRoutes = require('./routes/restaurantRoutes');
+const logRoutes = require('./routes/logRoutes');
 
 // Admin routes
 app.use('/api/admin', adminRoutes);
 
 // Room routes
 app.use('/api/rooms', roomRoutes);
+
+// Restaurant routes
+app.use('/api/restaurant', restaurantRoutes);
+
+// Log routes (Digital Logbook)
+app.use('/api/logs', logRoutes);
 
 // Other routes (will be created later)
 // app.use('/api/auth', require('./routes/auth.routes'));

@@ -170,10 +170,24 @@ exports.updateRoom = async (req, res, next) => {
     }
 
     // Process images
-    let imageUrls = req.body.images || [];
-    if (typeof imageUrls === 'string') imageUrls = [imageUrls]; // Handle single image case
+    // Frontend sends:
+    // - existingImages: JSON array of URLs to keep
+    // - images (via req.files): new File objects to upload
+    let imageUrls = [];
+    
+    // Parse existing images from frontend
+    if (req.body.existingImages) {
+      try {
+        const existingImages = JSON.parse(req.body.existingImages);
+        if (Array.isArray(existingImages)) {
+          imageUrls = existingImages;
+        }
+      } catch (err) {
+        console.error('Error parsing existingImages:', err);
+      }
+    }
 
-    // Add new uploaded images
+    // Add new uploaded images from Cloudinary
     if (req.files && req.files.length > 0) {
       const newImageUrls = req.files.map(file => file.path);
       imageUrls = [...imageUrls, ...newImageUrls];

@@ -5,26 +5,26 @@ const Testimonials = () => {
   const testimonials = [
     {
       id: 1,
-      name: 'Priya Sharma',
-      location: 'Mumbai, India',
+      name: 'Swapnendu Roy',
+      location: 'Durgapur, India',
       rating: 5,
-      text: 'An absolutely divine experience! The attention to detail, the impeccable service, and the luxurious ambiance made our anniversary celebration truly unforgettable. Rudraksh Inn sets the gold standard for hospitality.',
+      text: 'Great place. Great food!!!',
       date: 'December 2025',
     },
     {
       id: 2,
-      name: 'Rajesh Patel',
-      location: 'Ahmedabad, India',
+      name: 'Surojit Majumdar',
+      location: 'Durgapur, India',
       rating: 5,
-      text: 'From the moment we arrived, we were treated like royalty. The Presidential Suite exceeded all expectations, and the restaurant\'s culinary offerings were simply exquisite. A perfect blend of tradition and modernity.',
+      text: 'Very good staff 😊, Nice property , Amazing food 🥑 🥝 🥑 🥝.',
       date: 'November 2025',
     },
     {
       id: 3,
-      name: 'Ananya Reddy',
-      location: 'Bangalore, India',
+      name: 'Arup Mukherjee',
+      location: 'Durgapur, India',
       rating: 5,
-      text: 'The perfect sanctuary for a business retreat. The Executive Suite provided the ideal workspace, while the spa and dining experiences offered much-needed relaxation. Truly a five-star experience in every sense.',
+      text: 'Good food. Nice and spacious accommodation.',
       date: 'January 2026',
     },
   ];
@@ -144,13 +144,13 @@ const Testimonials = () => {
             <div className="flex items-center space-x-2">
               <Star className="text-champagne-gold fill-champagne-gold" size={24} />
               <div>
-                <div className="font-playfair font-bold text-2xl text-deep-charcoal">4.9/5</div>
+                <div className="font-playfair font-bold text-2xl text-deep-charcoal">5/5</div>
                 <div className="text-xs text-rich-espresso font-lato">Guest Rating</div>
               </div>
             </div>
             <div className="h-12 w-px bg-pale-champagne" />
             <div>
-              <div className="font-playfair font-bold text-2xl text-deep-charcoal">1000+</div>
+              <div className="font-playfair font-bold text-2xl text-deep-charcoal">100+</div>
               <div className="text-xs text-rich-espresso font-lato">Happy Guests</div>
             </div>
             <div className="h-12 w-px bg-pale-champagne" />

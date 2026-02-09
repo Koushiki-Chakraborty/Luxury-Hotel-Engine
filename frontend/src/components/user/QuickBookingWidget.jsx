@@ -1,17 +1,19 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { motion } from 'framer-motion';
 import { Calendar, Users, Search } from 'lucide-react';
 import { format } from 'date-fns';
 
 const QuickBookingWidget = () => {
+  const navigate = useNavigate();
   const [checkIn, setCheckIn] = useState('');
   const [checkOut, setCheckOut] = useState('');
   const [guests, setGuests] = useState(2);
 
   const handleSearch = (e) => {
     e.preventDefault();
-    console.log({ checkIn, checkOut, guests });
-    // Navigate to rooms page with filters
+    // Navigate to rooms page with search parameters
+    navigate(`/rooms?search=true&guests=${guests}`);
   };
 
   return (
@@ -20,7 +22,7 @@ const QuickBookingWidget = () => {
       whileInView={{ opacity: 1, y: 0 }}
       viewport={{ once: true }}
       transition={{ duration: 0.6 }}
-      className="relative -mt-32 z-30 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
+      className="relative -mt-12 sm:-mt-16 md:-mt-20 z-30 max-w-6xl mx-auto px-4 sm:px-6 lg:px-8"
     >
       <div className="bg-warm-cream rounded-luxury shadow-xl border-2 border-champagne-gold/20 p-6 md:p-8">
         {/* Decorative wood accent */}
@@ -101,7 +103,7 @@ const QuickBookingWidget = () => {
         {/* Quick stats */}
         <div className="mt-6 pt-6 border-t border-pale-champagne grid grid-cols-3 gap-4 text-center">
           <div>
-            <div className="text-2xl font-playfair font-bold text-champagne-gold">50+</div>
+            <div className="text-2xl font-playfair font-bold text-champagne-gold">10+</div>
             <div className="text-sm text-rich-espresso font-lato">Luxury Rooms</div>
           </div>
           <div>

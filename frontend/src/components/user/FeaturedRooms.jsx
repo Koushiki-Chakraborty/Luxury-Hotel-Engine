@@ -1,43 +1,39 @@
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { Bed, Users, Maximize, Wifi, Coffee, Tv, ArrowRight } from 'lucide-react';
+import { Users, ArrowRight } from 'lucide-react';
+import axios from 'axios';
 
 const FeaturedRooms = () => {
-  const rooms = [
-    {
-      id: 1,
-      type: 'Deluxe Room',
-      price: 8999,
-      image: 'deluxe',
-      size: '350 sq ft',
-      guests: 2,
-      beds: '1 King Bed',
-      amenities: ['Free WiFi', 'Smart TV', 'Mini Bar', 'City View'],
-      description: 'Elegant comfort with modern amenities and stunning city views.',
-    },
-    {
-      id: 2,
-      type: 'Executive Suite',
-      price: 15999,
-      image: 'suite',
-      size: '600 sq ft',
-      guests: 3,
-      beds: '1 King + Sofa Bed',
-      amenities: ['Free WiFi', 'Smart TV', 'Kitchenette', 'Balcony'],
-      description: 'Spacious luxury with separate living area and premium facilities.',
-      featured: true,
-    },
-    {
-      id: 3,
-      type: 'Presidential Suite',
-      price: 29999,
-      image: 'presidential',
-      size: '1200 sq ft',
-      guests: 4,
-      beds: '2 King Beds',
-      amenities: ['Free WiFi', 'Home Theater', 'Butler Service', 'Panoramic View'],
-      description: 'Ultimate luxury experience with exclusive amenities and services.',
-    },
-  ];
+  const [rooms, setRooms] = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    const fetchFeaturedRooms = async () => {
+      try {
+        setLoading(true);
+        const response = await axios.get('http://localhost:5000/api/rooms');
+        
+        // Access nested data structure
+        const roomsArray = response.data.data || [];
+        
+        // Filter for featured rooms, sort by room number, and limit to 3
+        const featuredRooms = roomsArray
+          .filter(room => room.isFeatured === true)
+          .sort((a, b) => a.roomNumber - b.roomNumber)
+          .slice(0, 3);
+        
+        setRooms(featuredRooms);
+      } catch (err) {
+        console.error('Error fetching featured rooms:', err);
+        setRooms([]);
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchFeaturedRooms();
+  }, []);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -56,16 +52,6 @@ const FeaturedRooms = () => {
       y: 0,
       transition: { duration: 0.6 },
     },
-  };
-
-  // Generate gradient background for room cards
-  const getRoomGradient = (type) => {
-    const gradients = {
-      deluxe: 'from-rich-espresso to-deep-charcoal',
-      suite: 'from-deep-charcoal via-rich-espresso to-deep-charcoal',
-      presidential: 'from-champagne-gold/20 via-deep-charcoal to-rich-espresso',
-    };
-    return gradients[type] || gradients.deluxe;
   };
 
   return (
@@ -92,133 +78,135 @@ const FeaturedRooms = () => {
           </p>
         </motion.div>
 
-        {/* Rooms Grid */}
-        <motion.div
-          variants={containerVariants}
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
-        >
-          {rooms.map((room) => (
+        {/* Loading State */}
+        {loading ? (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {[1, 2, 3].map((i) => (
+              <div key={i} className="card-primary h-96 animate-pulse bg-pale-champagne"></div>
+            ))}
+          </div>
+        ) : rooms.length === 0 ? (
+          /* No Featured Rooms Message */
+          <div className="text-center py-12">
+            <p className="text-xl text-rich-espresso font-cormorant italic">
+              Explore our signature sanctuaries
+            </p>
+            <Link to="/rooms" className="inline-block mt-6">
+              <motion.button
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+                className="btn-primary text-lg px-10 py-4"
+              >
+                View All Rooms
+              </motion.button>
+            </Link>
+          </div>
+        ) : (
+          <>
+            {/* Rooms Grid */}
             <motion.div
-              key={room.id}
-              variants={cardVariants}
-              whileHover={{ y: -8 }}
-              className="group relative"
+              variants={containerVariants}
+              initial="hidden"
+              whileInView="visible"
+              viewport={{ once: true }}
+              className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
             >
-              <div className="card-primary overflow-hidden h-full flex flex-col">
-                {/* Featured Badge */}
-                {room.featured && (
-                  <div className="absolute top-4 right-4 z-10 bg-champagne-gold text-deep-charcoal px-4 py-1 rounded-full text-xs font-bold uppercase tracking-wider">
-                    Most Popular
-                  </div>
-                )}
+              {rooms.map((room) => (
+                <motion.div
+                  key={room._id}
+                  variants={cardVariants}
+                  whileHover={{ y: -8 }}
+                  className="group relative"
+                >
+                  <div className="card-primary overflow-hidden h-full flex flex-col">
+                    {/* Room Image */}
+                    <div className="relative h-72 overflow-hidden bg-gradient-to-br from-rich-espresso to-deep-charcoal">
+                      {room.images && room.images.length > 0 ? (
+                        <motion.img 
+                          src={room.images[0]} 
+                          alt={room.type}
+                          className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
+                          whileHover={{ scale: 1.05 }}
+                        />
+                      ) : (
+                        <div className="absolute inset-0 flex items-center justify-center">
+                          <div className="text-center">
+                            <div className="text-warm-cream font-playfair text-2xl font-bold">
+                              {room.type}
+                            </div>
+                          </div>
+                        </div>
+                      )}
 
-                {/* Room Image Placeholder with Gradient */}
-                <div className={`relative h-64 bg-gradient-to-br ${getRoomGradient(room.image)} overflow-hidden`}>
-                  {/* Decorative pattern overlay */}
-                  <div 
-                    className="absolute inset-0 opacity-20"
-                    style={{
-                      backgroundImage: `url("data:image/svg+xml,%3Csvg width='40' height='40' viewBox='0 0 40 40' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='%23D4AF37' fill-opacity='0.3' fill-rule='evenodd'%3E%3Cpath d='M0 40L40 0H20L0 20M40 40V20L20 40'/%3E%3C/g%3E%3C/svg%3E")`,
-                    }}
-                  />
-                  
-                  {/* Room type overlay */}
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <div className="text-center">
-                      <Bed className="text-champagne-gold mx-auto mb-2" size={48} />
-                      <div className="text-warm-cream font-playfair text-2xl font-bold">
-                        {room.type}
+                      {/* Gradient overlay for better text readability */}
+                      <div className="absolute inset-0 bg-gradient-to-t from-deep-charcoal/80 via-transparent to-transparent" />
+
+                      {/* Wood accent border */}
+                      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-champagne-gold to-transparent" />
+                    </div>
+
+                    {/* Room Details */}
+                    <div className="p-6 flex-grow flex flex-col">
+                      {/* Room Number & Type */}
+                      <div className="mb-4">
+                        <div className="text-sm text-champagne-gold font-lato font-semibold mb-1">
+                          Sanctuary {room.roomNumber}
+                        </div>
+                        <h3 className="text-2xl font-playfair font-bold text-deep-charcoal">
+                          {room.type}
+                        </h3>
                       </div>
-                    </div>
-                  </div>
 
-                  {/* Wood accent border */}
-                  <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-champagne-gold to-transparent" />
-                </div>
+                      {/* Description */}
+                      <p className="text-rich-espresso font-lato mb-6 flex-grow leading-relaxed">
+                        {room.description}
+                      </p>
 
-                {/* Room Details */}
-                <div className="p-6 flex-grow flex flex-col">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="text-2xl font-playfair font-bold text-deep-charcoal">
-                      {room.type}
-                    </h3>
-                    <div className="text-right">
-                      <div className="text-sm text-rich-espresso font-lato">From</div>
-                      <div className="text-2xl font-playfair font-bold text-champagne-gold">
-                        ₹{room.price.toLocaleString()}
-                      </div>
-                      <div className="text-xs text-rich-espresso">per night</div>
-                    </div>
-                  </div>
-
-                  <p className="text-rich-espresso font-lato mb-4 flex-grow">
-                    {room.description}
-                  </p>
-
-                  {/* Room Specs */}
-                  <div className="grid grid-cols-3 gap-3 mb-4 pb-4 border-b border-pale-champagne">
-                    <div className="text-center">
-                      <Maximize className="text-champagne-gold mx-auto mb-1" size={20} />
-                      <div className="text-xs text-rich-espresso">{room.size}</div>
-                    </div>
-                    <div className="text-center">
-                      <Users className="text-champagne-gold mx-auto mb-1" size={20} />
-                      <div className="text-xs text-rich-espresso">{room.guests} Guests</div>
-                    </div>
-                    <div className="text-center">
-                      <Bed className="text-champagne-gold mx-auto mb-1" size={20} />
-                      <div className="text-xs text-rich-espresso">{room.beds}</div>
-                    </div>
-                  </div>
-
-                  {/* Amenities */}
-                  <div className="mb-6">
-                    <div className="flex flex-wrap gap-2">
-                      {room.amenities.slice(0, 4).map((amenity, index) => (
-                        <span
-                          key={index}
-                          className="text-xs bg-pale-champagne text-rich-espresso px-3 py-1 rounded-full font-lato"
-                        >
-                          {amenity}
+                      {/* Capacity */}
+                      <div className="flex items-center gap-2 mb-6 pb-6 border-b border-pale-champagne">
+                        <Users className="text-champagne-gold" size={20} />
+                        <span className="text-sm text-rich-espresso font-lato">
+                          Up to {room.capacity} Guests
                         </span>
-                      ))}
+                      </div>
+
+                      {/* CTA Button - Link to Room Details */}
+                      <Link to={`/rooms/${room._id}`}>
+                        <motion.button
+                          whileHover={{ scale: 1.02 }}
+                          whileTap={{ scale: 0.98 }}
+                          className="btn-primary w-full flex items-center justify-center space-x-2 group-hover:shadow-gold"
+                        >
+                          <span>View Details</span>
+                          <ArrowRight size={18} />
+                        </motion.button>
+                      </Link>
                     </div>
                   </div>
-
-                  {/* CTA Button */}
-                  <motion.button
-                    whileHover={{ scale: 1.02 }}
-                    whileTap={{ scale: 0.98 }}
-                    className="btn-primary w-full flex items-center justify-center space-x-2 group-hover:shadow-gold"
-                  >
-                    <span>View Details</span>
-                    <ArrowRight size={18} />
-                  </motion.button>
-                </div>
-              </div>
+                </motion.div>
+              ))}
             </motion.div>
-          ))}
-        </motion.div>
 
-        {/* View All Rooms CTA */}
-        <motion.div
-          initial={{ opacity: 0, y: 30 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.6, delay: 0.4 }}
-          className="text-center mt-12"
-        >
-          <motion.button
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
-            className="btn-secondary text-lg px-10 py-4"
-          >
-            View All Rooms
-          </motion.button>
-        </motion.div>
+            {/* View All Rooms CTA */}
+            <motion.div
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.4 }}
+              className="text-center mt-12"
+            >
+              <Link to="/rooms">
+                <motion.button
+                  whileHover={{ scale: 1.05 }}
+                  whileTap={{ scale: 0.95 }}
+                  className="btn-secondary text-lg px-10 py-4"
+                >
+                  View All Rooms
+                </motion.button>
+              </Link>
+            </motion.div>
+          </>
+        )}
       </div>
     </section>
   );

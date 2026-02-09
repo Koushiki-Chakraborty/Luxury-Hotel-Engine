@@ -9,7 +9,10 @@ import {
   TrendingUp,
   TrendingDown,
   Eye,
-  Edit
+  Edit,
+  AlertTriangle,
+  Bell,
+  Clock
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
@@ -17,10 +20,14 @@ import axios from 'axios';
 const AdminDashboard = () => {
   const { setIsLoading } = useOutletContext();
   const [stats, setStats] = useState(null);
+  const [logbookStats, setLogbookStats] = useState(null);
+  const [dueCheckouts, setDueCheckouts] = useState([]);
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchStats();
+    fetchLogbookStats();
+    fetchDueCheckouts();
   }, []);
 
   const fetchStats = async () => {
@@ -33,6 +40,24 @@ const AdminDashboard = () => {
       setError('Failed to load dashboard statistics');
     } finally {
       setIsLoading(false);
+    }
+  };
+
+  const fetchLogbookStats = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/logs/stats');
+      setLogbookStats(response.data);
+    } catch (err) {
+      console.error('Error fetching logbook stats:', err);
+    }
+  };
+
+  const fetchDueCheckouts = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/logs/checkouts/due');
+      setDueCheckouts(response.data.data || []);
+    } catch (err) {
+      console.error('Error fetching due checkouts:', err);
     }
   };
 
@@ -50,9 +75,9 @@ const AdminDashboard = () => {
 
   const statCards = [
     {
-      title: 'Total Revenue',
-      value: `₹${stats.revenue.total.toLocaleString()}`,
-      trend: stats.revenue.trend,
+      title: 'Total Revenue (Logbook)',
+      value: `₹${(logbookStats?.totalRevenue || 0).toLocaleString('en-IN')}`,
+      subtitle: `${logbookStats?.data?.length || 0} entries`,
       icon: DollarSign,
       color: 'bg-success-green'
     },
@@ -100,6 +125,33 @@ const AdminDashboard = () => {
         </p>
       </div>
 
+      {dueCheckouts.length > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -20 }}
+          animate={{ opacity: 1, y: 0 }}
+          className="bg-error-burgundy/10 border-l-4 border-error-burgundy p-4 rounded-r-lg shadow-sm"
+        >
+          <div className="flex items-start gap-3">
+            <Bell className="text-error-burgundy mt-1 animate-pulse" size={24} />
+            <div>
+              <h3 className="font-playfair font-bold text-deep-charcoal text-lg">
+                Immediate Action: Due Checkouts ({dueCheckouts.length})
+              </h3>
+              <div className="mt-2 space-y-2">
+                {dueCheckouts.map((log) => (
+                  <div key={log._id} className="text-rich-espresso font-lato text-sm flex items-center gap-2">
+                     <Clock size={14} className="text-error-burgundy" />
+                     <span>
+                       Immediate Action: <span className="font-bold text-deep-charcoal">{log.customerName}</span> is scheduled for checkout from Sanctuary <span className="font-bold text-champagne-gold font-playfair text-base">Room {log.roomNumber}</span> today at 11:00 AM.
+                     </span>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
+
       {/* Stat Cards */}
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
         {statCards.map((card, index) => (
@@ -134,7 +186,7 @@ const AdminDashboard = () => {
         ))}
       </div>
 
-      {/* Weekly Revenue Chart */}
+      {/* Revenue Trend Chart (Logbook Data) */}
       <motion.div
         initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
@@ -142,33 +194,39 @@ const AdminDashboard = () => {
         className="bg-soft-ivory rounded-luxury shadow-luxury p-6 border border-pale-champagne"
       >
         <h3 className="text-xl font-playfair font-bold text-deep-charcoal mb-6">
-          Weekly Revenue
+          Revenue Trend (Logbook)
         </h3>
-        <ResponsiveContainer width="100%" height={300}>
-          <BarChart data={stats.weeklyRevenue}>
-            <CartesianGrid strokeDasharray="3 3" stroke="#F0E6D2" />
-            <XAxis 
-              dataKey="day" 
-              stroke="#3E2723"
-              style={{ fontFamily: 'Lato', fontSize: '12px' }}
-            />
-            <YAxis 
-              stroke="#3E2723"
-              style={{ fontFamily: 'Lato', fontSize: '12px' }}
-              tickFormatter={(value) => `₹${value / 1000}k`}
-            />
-            <Tooltip 
-              contentStyle={{
-                backgroundColor: '#FFFEF7',
-                border: '1px solid #D4AF37',
-                borderRadius: '8px',
-                fontFamily: 'Lato'
-              }}
-              formatter={(value) => [`₹${value.toLocaleString()}`, 'Revenue']}
-            />
-            <Bar dataKey="revenue" fill="#D4AF37" radius={[8, 8, 0, 0]} />
-          </BarChart>
-        </ResponsiveContainer>
+        {logbookStats && logbookStats.data && logbookStats.data.length > 0 ? (
+          <ResponsiveContainer width="100%" height={300}>
+            <BarChart data={logbookStats.data}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#F0E6D2" />
+              <XAxis 
+                dataKey="date" 
+                stroke="#3E2723"
+                style={{ fontFamily: 'Lato', fontSize: '12px' }}
+              />
+              <YAxis 
+                stroke="#3E2723"
+                style={{ fontFamily: 'Lato', fontSize: '12px' }}
+                tickFormatter={(value) => `₹${value / 1000}k`}
+              />
+              <Tooltip 
+                contentStyle={{
+                  backgroundColor: '#FFFEF7',
+                  border: '1px solid #D4AF37',
+                  borderRadius: '8px',
+                  fontFamily: 'Lato'
+                }}
+                formatter={(value) => [`₹${value.toLocaleString('en-IN')}`, 'Revenue']}
+              />
+              <Bar dataKey="revenue" fill="#D4AF37" radius={[8, 8, 0, 0]} />
+            </BarChart>
+          </ResponsiveContainer>
+        ) : (
+          <div className="h-[300px] flex items-center justify-center text-rich-espresso">
+            No revenue data available. Start adding entries to the logbook!
+          </div>
+        )}
       </motion.div>
 
       {/* Recent Bookings Table */}

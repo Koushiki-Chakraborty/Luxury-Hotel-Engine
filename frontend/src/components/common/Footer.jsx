@@ -1,5 +1,5 @@
 import { Link } from 'react-router-dom';
-import { Phone, Mail, MapPin, Facebook, Instagram, Twitter, Linkedin } from 'lucide-react';
+import { Phone, Mail, MapPin, Facebook } from 'lucide-react';
 import { motion } from 'framer-motion';
 
 const Footer = () => {
@@ -13,24 +13,16 @@ const Footer = () => {
       { name: 'Events & Parties', path: '/events' },
     ],
     services: [
-      { name: 'Room Service', path: '/services/room-service' },
-      { name: 'Spa & Wellness', path: '/services/spa' },
-      { name: 'Concierge', path: '/services/concierge' },
-      { name: 'Airport Transfer', path: '/services/transfer' },
+      { name: 'Rooms & Suites', path: '/rooms' },
+      { name: 'Restaurant', path: '/restaurant' },
+      { name: 'Events & Parties', path: '/events' },
+      { name: 'Contact Us', path: '/contact' },
     ],
-    policies: [
-      { name: 'Privacy Policy', path: '/privacy' },
-      { name: 'Terms & Conditions', path: '/terms' },
-      { name: 'Cancellation Policy', path: '/cancellation' },
-      { name: 'FAQs', path: '/faqs' },
-    ],
+
   };
 
   const socialLinks = [
-    { icon: Facebook, url: 'https://facebook.com', label: 'Facebook' },
-    { icon: Instagram, url: 'https://instagram.com', label: 'Instagram' },
-    { icon: Twitter, url: 'https://twitter.com', label: 'Twitter' },
-    { icon: Linkedin, url: 'https://linkedin.com', label: 'LinkedIn' },
+    { icon: Facebook, url: 'https://www.facebook.com/share/1CDsRyRsQJ/', label: 'Facebook' },
   ];
 
   return (
@@ -40,7 +32,7 @@ const Footer = () => {
 
       {/* Main Footer Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-16 pb-8">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-8 mb-12">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8 mb-12">
           {/* Brand Section */}
           <div className="lg:col-span-2">
             <motion.div
@@ -62,13 +54,13 @@ const Footer = () => {
               {/* Contact Info */}
               <div className="space-y-3">
                 <a
-                  href="tel:+911234567890"
+                  href="tel:+919635553346"
                   className="flex items-center space-x-3 text-pale-champagne hover:text-champagne-gold transition-colors group"
                 >
                   <div className="bg-rich-espresso p-2 rounded-lg group-hover:bg-champagne-gold/20 transition-colors">
                     <Phone size={18} className="text-champagne-gold" />
                   </div>
-                  <span className="font-lato">+91 123 456 7890</span>
+                  <span className="font-lato">+91 9635553346</span>
                 </a>
                 <a
                   href="mailto:info@rudrakshinn.com"
@@ -84,9 +76,9 @@ const Footer = () => {
                     <MapPin size={18} className="text-champagne-gold" />
                   </div>
                   <span className="font-lato">
-                    123 Luxury Avenue, Premium District
+                    Rudraksh Inn, Near City Centre
                     <br />
-                    Mumbai, Maharashtra 400001
+                    Durgapur, West Bengal - 713212
                   </span>
                 </div>
               </div>
@@ -141,56 +133,29 @@ const Footer = () => {
             </ul>
           </motion.div>
 
-          {/* Policies */}
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.5, delay: 0.3 }}
-          >
-            <h4 className="text-champagne-gold font-lato font-bold text-lg mb-4 uppercase tracking-wider">
-              Policies
-            </h4>
-            <ul className="space-y-2">
-              {footerLinks.policies.map((link) => (
-                <li key={link.path}>
-                  <Link
-                    to={link.path}
-                    className="text-pale-champagne hover:text-champagne-gold transition-colors font-lato inline-block hover:translate-x-1 transform duration-200"
-                  >
-                    {link.name}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          </motion.div>
+
         </div>
 
         {/* Social Media & Bottom Bar */}
         <div className="pt-8 border-t border-pale-champagne/20">
           <div className="flex flex-col md:flex-row items-center justify-between space-y-4 md:space-y-0">
-            {/* Social Links */}
+            {/* Facebook CTA Button */}
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.5, delay: 0.4 }}
-              className="flex items-center space-x-4"
+              className="w-full md:w-auto flex justify-center"
             >
-              {socialLinks.map((social) => (
-                <motion.a
-                  key={social.label}
-                  href={social.url}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  whileHover={{ scale: 1.1, y: -2 }}
-                  whileTap={{ scale: 0.95 }}
-                  className="bg-rich-espresso p-3 rounded-lg hover:bg-champagne-gold hover:text-deep-charcoal transition-all duration-300 text-champagne-gold"
-                  aria-label={social.label}
-                >
-                  <social.icon size={20} />
-                </motion.a>
-              ))}
+              <a
+                href="https://www.facebook.com/share/1CDsRyRsQJ/"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="inline-flex items-center space-x-3 px-6 py-3 bg-rich-espresso border border-champagne-gold/30 rounded-full text-champagne-gold hover:bg-champagne-gold hover:text-deep-charcoal transition-all duration-300 font-lato font-semibold"
+              >
+                <Facebook size={20} />
+                <span>Follow us on Facebook</span>
+              </a>
             </motion.div>
 
             {/* Copyright */}

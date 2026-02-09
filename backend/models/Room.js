@@ -38,6 +38,17 @@ const roomSchema = new mongoose.Schema({
     type: String,
     trim: true
   },
+  capacity: {
+    type: Number,
+    required: [true, 'Please provide room capacity'],
+    min: [1, 'Capacity must be at least 1'],
+    max: [10, 'Capacity cannot exceed 10'],
+    default: 2
+  },
+  isFeatured: {
+    type: Boolean,
+    default: false
+  },
   images: {
     type: [String],
     default: []

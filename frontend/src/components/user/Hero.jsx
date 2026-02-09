@@ -1,12 +1,14 @@
 import { motion } from 'framer-motion';
-import { ArrowRight, Sparkles } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { Sparkles } from 'lucide-react';
+import PrimaryButton from '../shared/PrimaryButton';
 
 const Hero = () => {
   return (
     <div className="relative h-screen min-h-[600px] flex items-center justify-center overflow-hidden pt-20">
-      {/* Background with luxury resort aesthetic */}
+      {/* Background with luxury gradient */}
       <div className="absolute inset-0 bg-gradient-to-br from-rich-espresso via-deep-charcoal to-rich-espresso">
-        {/* Overlay pattern for texture */}
+        {/* Subtle pattern overlay for texture */}
         <div 
           className="absolute inset-0 opacity-10"
           style={{
@@ -18,105 +20,99 @@ const Hero = () => {
         <div className="absolute inset-0 bg-gradient-to-t from-deep-charcoal/80 via-deep-charcoal/50 to-transparent" />
       </div>
 
-      {/* Wood texture accent - top border */}
+      {/* Champagne gold accent - top border */}
       <div className="absolute top-0 left-0 right-0 h-2 bg-gradient-to-r from-transparent via-champagne-gold to-transparent opacity-60" />
       
-      {/* Stone texture accent - decorative elements */}
+      {/* Decorative glow elements */}
       <div className="absolute top-20 left-10 w-32 h-32 bg-muted-gold/10 rounded-full blur-3xl" />
       <div className="absolute bottom-20 right-10 w-40 h-40 bg-champagne-gold/10 rounded-full blur-3xl" />
 
-      {/* Content */}
-      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center">
+      {/* Content with Staggered Animations */}
+      <div className="relative z-10 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 text-center pt-16 sm:pt-20 md:pt-24 pb-32 sm:pb-36 md:pb-40">
+        {/* Subtle Luxury Badge - Appears First (0.2s) */}
         <motion.div
+          initial={{ opacity: 0, scale: 0.8 }}
+          animate={{ opacity: 1, scale: 1 }}
+          transition={{ duration: 0.6, delay: 0.2 }}
+          className="inline-flex items-center space-x-2 bg-white/5 backdrop-blur-md border border-white/10 rounded-full px-6 py-2 mb-8"
+        >
+          <Sparkles className="text-champagne-gold" size={20} />
+          <span className="text-warm-cream font-lato text-sm tracking-[0.2em] uppercase">
+            5-Star Luxury Experience
+          </span>
+        </motion.div>
+
+        {/* Main Heading - Appears Second (0.4s) */}
+        <motion.h1
           initial={{ opacity: 0, y: 30 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.8, delay: 0.2 }}
+          transition={{ duration: 0.8, delay: 0.4 }}
+          className="text-5xl md:text-7xl lg:text-8xl font-playfair font-bold text-warm-cream mb-6 tracking-tighter leading-tight"
         >
-          {/* Luxury badge */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.8 }}
-            animate={{ opacity: 1, scale: 1 }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-            className="inline-flex items-center space-x-2 bg-champagne-gold/20 backdrop-blur-sm border border-champagne-gold/30 rounded-full px-6 py-2 mb-8"
-          >
-            <Sparkles className="text-champagne-gold" size={20} />
-            <span className="text-warm-cream font-lato text-sm tracking-wider uppercase">
-              5-Star Luxury Experience
-            </span>
-          </motion.div>
+          Experience Unparalleled
+          <br />
+          <span className="text-champagne-gold">Luxury</span>
+        </motion.h1>
 
-          {/* Main heading */}
-          <motion.h1
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.5 }}
-            className="text-5xl md:text-7xl lg:text-8xl font-playfair font-bold text-warm-cream mb-6 leading-tight"
-          >
-            Experience Unparalleled
-            <br />
-            <span className="text-champagne-gold">Luxury</span>
-          </motion.h1>
-
-          {/* Subheading */}
-          <motion.p
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.7 }}
-            className="text-xl md:text-2xl text-pale-champagne font-lato max-w-3xl mx-auto mb-12 leading-relaxed"
-          >
-            Discover the perfect blend of contemporary elegance and timeless hospitality
-            at Rudraksh Inn, where every moment is crafted for your comfort.
-          </motion.p>
-
-          {/* CTA Buttons */}
-          <motion.div
-            initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.9 }}
-            className="flex flex-col sm:flex-row items-center justify-center space-y-4 sm:space-y-0 sm:space-x-6"
-          >
-            <motion.button
-              whileHover={{ scale: 1.05, boxShadow: '0 8px 30px rgba(212, 175, 55, 0.4)' }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-primary flex items-center space-x-2 text-lg px-10 py-5"
-            >
-              <span>Reserve Your Stay</span>
-              <ArrowRight size={20} />
-            </motion.button>
-            
-            <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              className="btn-secondary text-lg px-10 py-5 text-warm-cream border-warm-cream hover:bg-warm-cream/10"
-            >
-              Explore Rooms
-            </motion.button>
-          </motion.div>
-        </motion.div>
+        {/* Subheading - Appears Third (0.6s) */}
+        <motion.p
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.8, delay: 0.6 }}
+          className="text-xl md:text-2xl text-pale-champagne font-lato max-w-2xl mx-auto mb-1 leading-relaxed"
+        >
+          Discover the perfect blend of contemporary elegance and timeless hospitality
+          at Rudraksh Inn, where every moment is crafted for your comfort.
+        </motion.p>
 
         {/* Scroll indicator */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
           transition={{ duration: 1, delay: 1.2 }}
-          className="absolute bottom-10 left-1/2 transform -translate-x-1/2"
+          className="absolute bottom-16 left-1/2 transform -translate-x-1/2"
         >
           <motion.div
-            animate={{ y: [0, 10, 0] }}
-            transition={{ duration: 2, repeat: Infinity }}
-            className="w-6 h-10 border-2 border-champagne-gold rounded-full flex items-start justify-center p-2"
+            animate={{ y: [0, 8, 0] }}
+            transition={{ duration: 1.5, repeat: Infinity, ease: "easeInOut" }}
+            className="flex flex-col items-center space-y-1"
           >
-            <motion.div
-              animate={{ y: [0, 12, 0] }}
-              transition={{ duration: 2, repeat: Infinity }}
-              className="w-1.5 h-1.5 bg-champagne-gold rounded-full"
-            />
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              className="text-champagne-gold"
+            >
+              <path 
+                d="M7 10L12 15L17 10" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
+            <svg 
+              width="24" 
+              height="24" 
+              viewBox="0 0 24 24" 
+              fill="none" 
+              className="text-champagne-gold opacity-60"
+            >
+              <path 
+                d="M7 10L12 15L17 10" 
+                stroke="currentColor" 
+                strokeWidth="2" 
+                strokeLinecap="round" 
+                strokeLinejoin="round"
+              />
+            </svg>
           </motion.div>
         </motion.div>
       </div>
 
-      {/* Decorative wood border bottom */}
-      <div className="absolute bottom-0 left-0 right-0 h-1 bg-gradient-to-r from-transparent via-muted-gold to-transparent" />
+      {/* Subtle fade to next section */}
+      <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-soft-ivory/30 to-transparent pointer-events-none" />
     </div>
   );
 };

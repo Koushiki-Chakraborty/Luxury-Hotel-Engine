@@ -6,7 +6,7 @@ import {
   Bed, 
   Calendar, 
   UtensilsCrossed, 
-  ShoppingBag, 
+  BookOpen, 
   Settings, 
   LogOut, 
   Menu, 
@@ -27,13 +27,13 @@ const AdminLayout = () => {
     { name: 'Rooms', path: '/admin/rooms', icon: Bed },
     { name: 'Bookings', path: '/admin/bookings', icon: Calendar },
     { name: 'Restaurant', path: '/admin/restaurant', icon: UtensilsCrossed },
-    { name: 'Orders', path: '/admin/orders', icon: ShoppingBag },
+    { name: 'Logbook', path: '/admin/logbook', icon: BookOpen },
     { name: 'Settings', path: '/admin/settings', icon: Settings }
   ];
 
   const handleLogout = () => {
     logout();
-    navigate('/admin/login');
+    navigate('/', { replace: true });
   };
 
   return (

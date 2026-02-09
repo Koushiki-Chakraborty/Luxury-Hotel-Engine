@@ -26,9 +26,6 @@ export const AdminProvider = ({ children }) => {
       setToken(storedToken);
       setAdmin(JSON.parse(storedAdmin));
       setIsAdminAuthenticated(true);
-      
-      // Set axios default header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${storedToken}`;
     }
     
     setLoading(false);
@@ -52,9 +49,6 @@ export const AdminProvider = ({ children }) => {
       localStorage.setItem('adminToken', newToken);
       localStorage.setItem('adminUser', JSON.stringify(user));
 
-      // Set axios default header
-      axios.defaults.headers.common['Authorization'] = `Bearer ${newToken}`;
-
       return { success: true };
     } catch (error) {
       console.error('Admin login error:', error);
@@ -74,9 +68,6 @@ export const AdminProvider = ({ children }) => {
     // Clear localStorage
     localStorage.removeItem('adminToken');
     localStorage.removeItem('adminUser');
-
-    // Remove axios default header
-    delete axios.defaults.headers.common['Authorization'];
   };
 
   const value = {
