@@ -103,7 +103,7 @@ const RoomCard = ({ room }) => {
           )}
 
           {/* Action Buttons */}
-          <div className="flex flex-col gap-2 mt-auto pt-4 border-t border-pale-champagne">
+          <div className="flex flex-col gap-3 mt-auto pt-4 border-t border-pale-champagne">
             {/* View Booking Options (Google Search) */}
             <motion.a
               href="https://www.google.com/search?q=rudraksh+inn+durgapur"
@@ -112,9 +112,8 @@ const RoomCard = ({ room }) => {
               onClick={(e) => e.stopPropagation()}
               whileHover={!isUnavailable ? { scale: 1.02 } : {}}
               whileTap={!isUnavailable ? { scale: 0.98 } : {}}
-              className={`btn-primary flex items-center justify-center space-x-2 text-xs px-3 py-2 w-full relative overflow-hidden group ${
-                isUnavailable ? 'opacity-50 grayscale pointer-events-none' : ''
-              }`}
+              className={`btn-primary flex items-center justify-center space-x-2 text-sm px-4 py-3 min-h-[44px] w-full relative overflow-hidden group ${isUnavailable ? 'opacity-50 grayscale pointer-events-none' : ''
+                }`}
             >
               <motion.div
                 className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
@@ -125,16 +124,16 @@ const RoomCard = ({ room }) => {
                 }}
               />
               <span className="relative z-10">
-                {isUnavailable 
+                {isUnavailable
                   ? (room.status === 'Maintenance' ? 'Under Maintenance' : 'Currently Occupied')
                   : 'View Booking Options'
                 }
               </span>
-              <ArrowRight size={14} className="relative z-10" />
+              <ArrowRight size={16} className="relative z-10" />
             </motion.a>
 
             {/* Contact to Reserve */}
-            <Link 
+            <Link
               to="/contact"
               onClick={(e) => e.stopPropagation()}
               className={isUnavailable ? 'pointer-events-none' : ''}
@@ -142,9 +141,8 @@ const RoomCard = ({ room }) => {
               <motion.button
                 whileHover={!isUnavailable ? { scale: 1.02 } : {}}
                 whileTap={!isUnavailable ? { scale: 0.98 } : {}}
-                className={`btn-secondary flex items-center justify-center space-x-2 text-xs px-3 py-2 w-full ${
-                  isUnavailable ? 'opacity-50 grayscale' : ''
-                }`}
+                className={`btn-secondary flex items-center justify-center space-x-2 text-sm px-4 py-3 min-h-[44px] w-full ${isUnavailable ? 'opacity-50 grayscale' : ''
+                  }`}
               >
                 <span>
                   {isUnavailable
@@ -152,7 +150,7 @@ const RoomCard = ({ room }) => {
                     : 'Contact to Reserve'
                   }
                 </span>
-                <ArrowRight size={14} />
+                <ArrowRight size={16} />
               </motion.button>
             </Link>
 
@@ -164,11 +162,10 @@ const RoomCard = ({ room }) => {
               onClick={(e) => e.stopPropagation()}
               whileHover={!isUnavailable ? { scale: 1.02 } : {}}
               whileTap={!isUnavailable ? { scale: 0.98 } : {}}
-              className={`flex items-center justify-center space-x-2 border-2 border-champagne-gold text-champagne-gold hover:bg-champagne-gold hover:text-white px-3 py-2 rounded-lg transition-colors duration-300 font-lato text-xs font-medium w-full ${
-                isUnavailable ? 'opacity-50 grayscale pointer-events-none' : ''
-              }`}
+              className={`flex items-center justify-center space-x-2 border-2 border-champagne-gold text-champagne-gold hover:bg-champagne-gold hover:text-white px-4 py-3 min-h-[44px] rounded-lg transition-colors duration-300 font-lato text-sm font-medium w-full ${isUnavailable ? 'opacity-50 grayscale pointer-events-none' : ''
+                }`}
             >
-              <MessageCircle size={14} />
+              <MessageCircle size={16} />
               <span>
                 {isUnavailable
                   ? (room.status === 'Maintenance' ? 'Under Maintenance' : 'Currently Occupied')

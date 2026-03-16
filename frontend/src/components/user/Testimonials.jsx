@@ -140,20 +140,20 @@ const Testimonials = () => {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="mt-16 text-center"
         >
-          <div className="inline-flex items-center space-x-8 bg-warm-cream rounded-full px-8 py-4 shadow-luxury">
+          <div className="inline-flex flex-col md:flex-row items-center gap-6 md:gap-8 md:space-x-8 bg-warm-cream rounded-2xl md:rounded-full px-8 py-6 md:py-4 shadow-luxury w-full md:w-auto">
             <div className="flex items-center space-x-2">
               <Star className="text-champagne-gold fill-champagne-gold" size={24} />
-              <div>
+              <div className="text-left">
                 <div className="font-playfair font-bold text-2xl text-deep-charcoal">5/5</div>
                 <div className="text-xs text-rich-espresso font-lato">Guest Rating</div>
               </div>
             </div>
-            <div className="h-12 w-px bg-pale-champagne" />
+            <div className="h-px w-full md:h-12 md:w-px bg-pale-champagne" />
             <div>
               <div className="font-playfair font-bold text-2xl text-deep-charcoal">100+</div>
               <div className="text-xs text-rich-espresso font-lato">Happy Guests</div>
             </div>
-            <div className="h-12 w-px bg-pale-champagne" />
+            <div className="h-px w-full md:h-12 md:w-px bg-pale-champagne" />
             <div>
               <div className="font-playfair font-bold text-2xl text-deep-charcoal">98%</div>
               <div className="text-xs text-rich-espresso font-lato">Recommend Us</div>

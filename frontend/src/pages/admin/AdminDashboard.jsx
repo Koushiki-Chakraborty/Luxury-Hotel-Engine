@@ -1,10 +1,9 @@
 import { useState, useEffect } from 'react';
 import { useOutletContext } from 'react-router-dom';
 import { motion } from 'framer-motion';
-import { 
-  DollarSign, 
-  Home, 
-  ShoppingCart, 
+import {
+  DollarSign,
+  Home,
   Calendar,
   TrendingUp,
   TrendingDown,
@@ -16,19 +15,46 @@ import {
 } from 'lucide-react';
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from 'recharts';
 import axios from 'axios';
+import { getDerivedStatus, countByDerivedStatus } from '../../utils/statusHelpers';
 
 const AdminDashboard = () => {
   const { setIsLoading } = useOutletContext();
   const [stats, setStats] = useState(null);
   const [logbookStats, setLogbookStats] = useState(null);
+  const [allLogs, setAllLogs] = useState([]);
   const [dueCheckouts, setDueCheckouts] = useState([]);
+  const [settings, setSettings] = useState({ defaultCheckoutTime: '11:00' });
   const [error, setError] = useState('');
 
   useEffect(() => {
     fetchStats();
     fetchLogbookStats();
+    fetchAllLogs();
     fetchDueCheckouts();
+    fetchSettings();
+
+    // Auto-refresh every 60 seconds to update derived statuses
+    const refreshInterval = setInterval(() => {
+      fetchStats();
+      fetchLogbookStats();
+      fetchAllLogs();
+      fetchDueCheckouts();
+    }, 60000); // 60 seconds
+
+    // Cleanup interval on unmount
+    return () => clearInterval(refreshInterval);
   }, []);
+
+  const fetchSettings = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/settings', { withCredentials: true });
+      if (response.data.success) {
+        setSettings(response.data.data);
+      }
+    } catch (error) {
+      console.error('Error fetching settings:', error);
+    }
+  };
 
   const fetchStats = async () => {
     try {
@@ -49,6 +75,15 @@ const AdminDashboard = () => {
       setLogbookStats(response.data);
     } catch (err) {
       console.error('Error fetching logbook stats:', err);
+    }
+  };
+
+  const fetchAllLogs = async () => {
+    try {
+      const response = await axios.get('http://localhost:5000/api/logs');
+      setAllLogs(response.data.data || []);
+    } catch (err) {
+      console.error('Error fetching all logs:', err);
     }
   };
 
@@ -73,6 +108,9 @@ const AdminDashboard = () => {
     return null; // Loading spinner will show
   }
 
+  // Calculate upcoming activity count using derived status
+  const upcomingActivityCount = countByDerivedStatus(allLogs, 'Pre-booked', settings?.defaultCheckInTime || '12:00');
+
   const statCards = [
     {
       title: 'Total Revenue (Logbook)',
@@ -89,10 +127,11 @@ const AdminDashboard = () => {
       color: 'bg-info-navy'
     },
     {
-      title: 'Pending Orders',
-      value: stats.pendingOrders,
-      icon: ShoppingCart,
-      color: 'bg-alert-amber'
+      title: 'Upcoming Activity',
+      value: upcomingActivityCount,
+      subtitle: 'Pre-booked entries',
+      icon: Calendar,
+      color: 'bg-[#4B4E6D]'
     },
     {
       title: 'Total Reservations',
@@ -113,14 +152,25 @@ const AdminDashboard = () => {
     }
   };
 
+  // Get derived status for a booking (if it has the required fields)
+  const getBookingDerivedStatus = (booking) => {
+    // Convert booking to log-like format for getDerivedStatus
+    const logFormat = {
+      date: booking.checkIn,
+      category: 'Room',
+      status: booking.status === 'confirmed' ? 'Active' : 'Active'
+    };
+    return getDerivedStatus(logFormat, settings?.defaultCheckInTime || '12:00');
+  };
+
   return (
-    <div className="space-y-6">
+    <div className="space-y-4 md:space-y-6 p-4 md:p-0">
       {/* Page Header */}
       <div>
-        <h2 className="text-3xl font-playfair font-bold text-deep-charcoal mb-2">
+        <h2 className="text-2xl md:text-3xl font-playfair font-bold text-deep-charcoal mb-2">
           Dashboard Overview
         </h2>
-        <p className="text-rich-espresso font-lato">
+        <p className="text-sm md:text-base text-rich-espresso font-lato">
           Welcome back! Here's what's happening today.
         </p>
       </div>
@@ -129,21 +179,21 @@ const AdminDashboard = () => {
         <motion.div
           initial={{ opacity: 0, y: -20 }}
           animate={{ opacity: 1, y: 0 }}
-          className="bg-error-burgundy/10 border-l-4 border-error-burgundy p-4 rounded-r-lg shadow-sm"
+          className="bg-error-burgundy/10 border-l-4 border-error-burgundy p-3 md:p-4 rounded-r-lg shadow-sm"
         >
-          <div className="flex items-start gap-3">
-            <Bell className="text-error-burgundy mt-1 animate-pulse" size={24} />
-            <div>
-              <h3 className="font-playfair font-bold text-deep-charcoal text-lg">
-                Immediate Action: Due Checkouts ({dueCheckouts.length})
+          <div className="flex items-start gap-2 md:gap-3">
+            <Bell className="text-error-burgundy mt-1 animate-pulse flex-shrink-0" size={20} />
+            <div className="flex-1 min-w-0">
+              <h3 className="font-playfair font-bold text-deep-charcoal text-base md:text-lg">
+                Due Checkouts ({dueCheckouts.length})
               </h3>
               <div className="mt-2 space-y-2">
                 {dueCheckouts.map((log) => (
-                  <div key={log._id} className="text-rich-espresso font-lato text-sm flex items-center gap-2">
-                     <Clock size={14} className="text-error-burgundy" />
-                     <span>
-                       Immediate Action: <span className="font-bold text-deep-charcoal">{log.customerName}</span> is scheduled for checkout from Sanctuary <span className="font-bold text-champagne-gold font-playfair text-base">Room {log.roomNumber}</span> today at 11:00 AM.
-                     </span>
+                  <div key={log._id} className="text-rich-espresso font-lato text-xs md:text-sm flex items-start gap-2">
+                    <Clock size={14} className="text-error-burgundy flex-shrink-0 mt-0.5" />
+                    <span className="break-words">
+                      <span className="font-bold text-deep-charcoal">{log.customerName}</span> - Room <span className="font-bold text-champagne-gold">{log.roomNumber}</span> (11:00 AM)
+                    </span>
                   </div>
                 ))}
               </div>
@@ -153,34 +203,36 @@ const AdminDashboard = () => {
       )}
 
       {/* Stat Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+      <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 md:gap-6">
         {statCards.map((card, index) => (
           <motion.div
             key={card.title}
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: index * 0.1 }}
-            className="bg-soft-ivory rounded-luxury shadow-luxury p-6 border border-pale-champagne hover:shadow-luxury-hover transition-shadow"
+            className={`bg-soft-ivory rounded-luxury shadow-luxury p-3 md:p-6 border border-pale-champagne hover:shadow-luxury-hover transition-shadow flex flex-col justify-between ${index === 0 ? 'col-span-2' : 'col-span-1'
+              }`}
           >
-            <div className="flex items-start justify-between mb-4">
-              <div className={`${card.color} p-3 rounded-lg`}>
-                <card.icon className="text-warm-cream" size={24} />
-              </div>
-              {card.trend !== undefined && (
-                <div className={`flex items-center space-x-1 text-sm font-lato font-bold ${
-                  card.trend > 0 ? 'text-success-green' : 'text-error-burgundy'
-                }`}>
-                  {card.trend > 0 ? <TrendingUp size={16} /> : <TrendingDown size={16} />}
-                  <span>{Math.abs(card.trend)}%</span>
+            <div>
+              <div className="flex items-start justify-between mb-2 md:mb-4">
+                <div className={`${card.color} p-2 md:p-3 rounded-lg`}>
+                  <card.icon className="text-warm-cream" size={18} />
                 </div>
-              )}
+                {card.trend !== undefined && (
+                  <div className={`flex items-center space-x-0.5 text-[10px] md:text-sm font-lato font-bold ${card.trend > 0 ? 'text-success-green' : 'text-error-burgundy'
+                    }`}>
+                    {card.trend > 0 ? <TrendingUp size={12} /> : <TrendingDown size={12} />}
+                    <span>{Math.abs(card.trend)}%</span>
+                  </div>
+                )}
+              </div>
+              <h3 className="text-rich-espresso font-lato text-[10px] md:text-sm mb-0.5 md:mb-1 uppercase tracking-wide truncate">{card.title}</h3>
+              <p className="text-xl md:text-3xl font-playfair font-bold text-deep-charcoal mb-0.5 md:mb-1 truncate">
+                {card.value}
+              </p>
             </div>
-            <h3 className="text-rich-espresso font-lato text-sm mb-1">{card.title}</h3>
-            <p className="text-3xl font-playfair font-bold text-deep-charcoal mb-1">
-              {card.value}
-            </p>
             {card.subtitle && (
-              <p className="text-rich-espresso text-xs font-lato">{card.subtitle}</p>
+              <p className="text-rich-espresso text-[10px] md:text-xs font-lato truncate">{card.subtitle}</p>
             )}
           </motion.div>
         ))}
@@ -200,17 +252,17 @@ const AdminDashboard = () => {
           <ResponsiveContainer width="100%" height={300}>
             <BarChart data={logbookStats.data}>
               <CartesianGrid strokeDasharray="3 3" stroke="#F0E6D2" />
-              <XAxis 
-                dataKey="date" 
+              <XAxis
+                dataKey="date"
                 stroke="#3E2723"
                 style={{ fontFamily: 'Lato', fontSize: '12px' }}
               />
-              <YAxis 
+              <YAxis
                 stroke="#3E2723"
                 style={{ fontFamily: 'Lato', fontSize: '12px' }}
                 tickFormatter={(value) => `₹${value / 1000}k`}
               />
-              <Tooltip 
+              <Tooltip
                 contentStyle={{
                   backgroundColor: '#FFFEF7',
                   border: '1px solid #D4AF37',
@@ -236,12 +288,45 @@ const AdminDashboard = () => {
         transition={{ delay: 0.5 }}
         className="bg-soft-ivory rounded-luxury shadow-luxury border border-pale-champagne overflow-hidden"
       >
-        <div className="p-6 border-b border-pale-champagne">
-          <h3 className="text-xl font-playfair font-bold text-deep-charcoal">
+        <div className="p-4 md:p-6 border-b border-pale-champagne">
+          <h3 className="text-lg md:text-xl font-playfair font-bold text-deep-charcoal">
             Recent Bookings
           </h3>
         </div>
-        <div className="overflow-x-auto">
+        <div className="md:hidden">
+          <ul className="divide-y divide-pale-champagne">
+            {stats.recentBookings.map((booking) => (
+              <li key={booking.id} className="p-4 flex items-center justify-between hover:bg-warm-cream transition-colors">
+                <div className="flex flex-col gap-1">
+                  <span className="text-sm font-bold text-deep-charcoal">{booking.customerName || 'Guest'}</span>
+                  <span className="text-xs text-rich-espresso">Room {booking.room}</span>
+                  <span className="text-xs text-soft-taupe">
+                    {new Date(booking.checkIn).toLocaleDateString('en-IN', {
+                      month: 'short',
+                      day: 'numeric'
+                    })}
+                  </span>
+                </div>
+                <div className="flex flex-col items-end gap-2">
+                  {(() => {
+                    const derivedStatus = getBookingDerivedStatus(booking);
+                    return (
+                      <span className={`inline-flex px-2 py-0.5 text-[10px] font-bold rounded-full border ${derivedStatus.color}`}>
+                        {derivedStatus.label}
+                      </span>
+                    );
+                  })()}
+                  <div className="flex gap-2">
+                    <button className="text-champagne-gold hover:text-muted-gold p-1 touch-target">
+                      <Eye size={16} />
+                    </button>
+                  </div>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+        <div className="hidden md:block overflow-x-auto">
           <table className="w-full">
             <thead className="bg-pale-champagne">
               <tr>
@@ -267,7 +352,7 @@ const AdminDashboard = () => {
                 <tr key={booking.id} className="hover:bg-warm-cream transition-colors">
                   <td className="px-6 py-4 whitespace-nowrap">
                     <div className="text-sm font-lato font-bold text-deep-charcoal">
-                      {booking.guestName}
+                      {booking.customerName || 'Guest'}
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
@@ -285,15 +370,20 @@ const AdminDashboard = () => {
                     </div>
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap">
-                    <span className={`inline-flex px-3 py-1 text-xs font-lato font-bold rounded-full border ${getStatusColor(booking.status)}`}>
-                      {booking.status.charAt(0).toUpperCase() + booking.status.slice(1)}
-                    </span>
+                    {(() => {
+                      const derivedStatus = getBookingDerivedStatus(booking);
+                      return (
+                        <span className={`inline-flex px-3 py-1 text-xs font-lato font-bold rounded-full border ${derivedStatus.color}`}>
+                          {derivedStatus.label}
+                        </span>
+                      );
+                    })()}
                   </td>
                   <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                    <button className="text-champagne-gold hover:text-muted-gold mr-3 transition-colors">
+                    <button className="text-champagne-gold hover:text-muted-gold mr-3 transition-colors touch-target inline-flex items-center justify-center">
                       <Eye size={18} />
                     </button>
-                    <button className="text-info-navy hover:text-info-navy/80 transition-colors">
+                    <button className="text-info-navy hover:text-info-navy/80 transition-colors touch-target inline-flex items-center justify-center">
                       <Edit size={18} />
                     </button>
                   </td>

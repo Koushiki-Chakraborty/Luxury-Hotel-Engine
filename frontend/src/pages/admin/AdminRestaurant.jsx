@@ -57,10 +57,10 @@ const AdminRestaurant = () => {
       setMessage({ type: '', text: '' });
 
       const formData = new FormData();
-      
+
       // Add existing images as JSON
       formData.append('existingImages', JSON.stringify(existingImages));
-      
+
       // Add new files
       selectedFiles.forEach(file => {
         formData.append('images', file);
@@ -83,14 +83,14 @@ const AdminRestaurant = () => {
       setExistingImages(response.data.data.images || []);
       setSelectedFiles([]);
       setPreviewUrls([]);
-      
+
       // Clear previews
       previewUrls.forEach(url => URL.revokeObjectURL(url));
     } catch (error) {
       console.error('Error updating restaurant:', error);
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.message || 'Failed to update restaurant' 
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to update restaurant'
       });
     } finally {
       setLoading(false);
@@ -124,9 +124,9 @@ const AdminRestaurant = () => {
       setShowClearConfirm(false);
     } catch (error) {
       console.error('Error clearing gallery:', error);
-      setMessage({ 
-        type: 'error', 
-        text: error.response?.data?.message || 'Failed to clear gallery' 
+      setMessage({
+        type: 'error',
+        text: error.response?.data?.message || 'Failed to clear gallery'
       });
     } finally {
       setLoading(false);
@@ -134,13 +134,13 @@ const AdminRestaurant = () => {
   };
 
   return (
-    <div className="p-6">
-      <div className="mb-6 flex items-center justify-between">
+    <div className="p-4 md:p-6">
+      <div className="mb-6 flex flex-col md:flex-row md:items-center justify-between gap-4">
         <div>
-          <h1 className="text-3xl font-playfair font-bold text-deep-charcoal mb-2">
-            Restaurant Gallery Management
+          <h1 className="text-2xl md:text-3xl font-playfair font-bold text-deep-charcoal mb-2">
+            Restaurant Gallery
           </h1>
-          <p className="text-rich-espresso font-lato">
+          <p className="text-rich-espresso font-lato text-sm md:text-base">
             Upload and manage images for the restaurant gallery
           </p>
         </div>
@@ -150,7 +150,7 @@ const AdminRestaurant = () => {
             whileTap={{ scale: 0.98 }}
             onClick={() => setShowClearConfirm(true)}
             disabled={loading}
-            className="px-4 py-2 bg-error-burgundy text-white rounded-lg hover:bg-error-burgundy/90 transition-colors disabled:opacity-50 font-lato font-medium"
+            className="w-full md:w-auto px-4 py-3 bg-error-burgundy text-white rounded-lg hover:bg-error-burgundy/90 transition-colors disabled:opacity-50 font-lato font-medium touch-target"
           >
             Clear Gallery
           </motion.button>
@@ -159,9 +159,8 @@ const AdminRestaurant = () => {
 
       {/* Message Display */}
       {message.text && (
-        <div className={`mb-6 p-4 rounded-lg ${
-          message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-        }`}>
+        <div className={`mb-6 p-4 rounded-lg ${message.type === 'success' ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+          }`}>
           {message.text}
         </div>
       )}
@@ -182,9 +181,10 @@ const AdminRestaurant = () => {
                 />
                 <button
                   onClick={() => removeExistingImage(index)}
-                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                  className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity touch-target shadow-lg"
+                  aria-label="Remove image"
                 >
-                  <X size={16} />
+                  <X size={18} />
                 </button>
               </div>
             ))}
@@ -197,7 +197,7 @@ const AdminRestaurant = () => {
         <h2 className="text-xl font-playfair font-bold text-deep-charcoal mb-4">
           Add New Images
         </h2>
-        
+
         {/* Dropzone */}
         <label className="flex flex-col items-center justify-center w-full h-64 border-2 border-champagne-gold border-dashed rounded-lg cursor-pointer bg-pale-champagne hover:bg-warm-cream transition-colors">
           <div className="flex flex-col items-center justify-center pt-5 pb-6">
@@ -234,9 +234,10 @@ const AdminRestaurant = () => {
                   />
                   <button
                     onClick={() => removeSelectedFile(index)}
-                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-0 group-hover:opacity-100 transition-opacity"
+                    className="absolute top-2 right-2 bg-red-500 text-white p-2 rounded-full opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity touch-target shadow-lg"
+                    aria-label="Remove preview"
                   >
-                    <X size={16} />
+                    <X size={18} />
                   </button>
                 </div>
               ))}
@@ -246,13 +247,13 @@ const AdminRestaurant = () => {
       </div>
 
       {/* Save Button */}
-      <div className="flex justify-end">
+      <div className="flex justify-end mt-6">
         <motion.button
           whileHover={{ scale: 1.02 }}
           whileTap={{ scale: 0.98 }}
           onClick={handleSave}
           disabled={loading || (selectedFiles.length === 0 && existingImages.length === restaurant?.images?.length)}
-          className="btn-primary flex items-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed"
+          className="w-full md:w-auto btn-primary flex items-center justify-center space-x-2 disabled:opacity-50 disabled:cursor-not-allowed touch-target"
         >
           <Save size={20} />
           <span>{loading ? 'Saving...' : 'Save Changes'}</span>

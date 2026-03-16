@@ -28,107 +28,110 @@ function App() {
   return (
     <Router>
       <ScrollToTop />
-      <AdminProvider>
-        <Routes>
-          {/* User Routes */}
-          <Route path="/" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <Home />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/rooms" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <Rooms />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/rooms/:id" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <RoomDetails />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/restaurant" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <Restaurant />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/events" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <Events />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/about" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <About />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/contact" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <Contact />
-              </main>
-              <Footer />
-            </div>
-          } />
-          
-          <Route path="/login" element={
-            <div className="flex flex-col min-h-screen">
-              <Navbar />
-              <main className="flex-grow">
-                <div className="pt-24 p-8 text-center">Login Page - Coming Soon</div>
-              </main>
-              <Footer />
-            </div>
-          } />
+      {/* User Routes */}
+      <Routes>
+        <Route path="/" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Home />
+            </main>
+            <Footer />
+          </div>
+        } />
 
-          {/* Admin Routes */}
-          <Route path="/admin/login" element={<AdminLogin />} />
-          
-          <Route path="/admin" element={
-            <ProtectedAdminRoute>
-              <AdminLayout />
-            </ProtectedAdminRoute>
-          }>
-            <Route path="dashboard" element={<AdminDashboard />} />
-            <Route path="rooms" element={<AdminRooms />} />
-            <Route path="bookings" element={<AdminBookings />} />
-            <Route path="restaurant" element={<AdminRestaurant />} />
-            <Route path="logbook" element={<AdminLogbook />} />
-            <Route path="settings" element={<AdminSettings />} />
-          </Route>
-        </Routes>
-      </AdminProvider>
-    </Router>
+        <Route path="/rooms" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Rooms />
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        <Route path="/rooms/:id" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <RoomDetails />
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        <Route path="/restaurant" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Restaurant />
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        <Route path="/events" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Events />
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        <Route path="/about" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <About />
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        <Route path="/contact" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <Contact />
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        <Route path="/login" element={
+          <div className="flex flex-col min-h-screen">
+            <Navbar />
+            <main className="flex-grow">
+              <div className="pt-24 p-8 text-center">Login Page - Coming Soon</div>
+            </main>
+            <Footer />
+          </div>
+        } />
+
+        {/* Admin Routes - Wrapped in AdminProvider */}
+        <Route path="/admin/*" element={
+          <AdminProvider>
+            <Routes>
+              <Route path="login" element={<AdminLogin />} />
+              <Route element={
+                <ProtectedAdminRoute>
+                  <AdminLayout />
+                </ProtectedAdminRoute>
+              }>
+                <Route path="dashboard" element={<AdminDashboard />} />
+                <Route path="rooms" element={<AdminRooms />} />
+                <Route path="bookings" element={<AdminBookings />} />
+                <Route path="restaurant" element={<AdminRestaurant />} />
+                <Route path="logbook" element={<AdminLogbook />} />
+                <Route path="settings" element={<AdminSettings />} />
+              </Route>
+            </Routes>
+          </AdminProvider>
+        } />
+      </Routes>
+    </Router >
   );
 }
 

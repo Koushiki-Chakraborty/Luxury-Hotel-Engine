@@ -1,14 +1,10 @@
 const User = require('../models/User');
 const jwt = require('jsonwebtoken');
 
-// @desc    Admin login
-// @route   POST /api/admin/login
-// @access  Public
 exports.adminLogin = async (req, res, next) => {
   try {
     const { email, password } = req.body;
 
-    // Validate input
     if (!email || !password) {
       return res.status(400).json({
         success: false,
@@ -16,7 +12,13 @@ exports.adminLogin = async (req, res, next) => {
       });
     }
 
-    // Find user and include password
+    if (password.length < 8) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long and include both letters and numbers.'
+      });
+    }
+
     const user = await User.findOne({ email }).select('+password');
 
     if (!user) {
@@ -26,15 +28,13 @@ exports.adminLogin = async (req, res, next) => {
       });
     }
 
-    // Check if user is admin
     if (user.role !== 'admin') {
-      return res.status(403).json({
+      return res.status(401).json({
         success: false,
-        message: 'Access denied. Admin privileges required.'
+        message: 'Invalid credentials'
       });
     }
 
-    // Verify password
     const isPasswordValid = await user.comparePassword(password);
 
     if (!isPasswordValid) {
@@ -44,19 +44,24 @@ exports.adminLogin = async (req, res, next) => {
       });
     }
 
-    // Generate JWT token
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
-      { expiresIn: process.env.JWT_EXPIRE || '7d' }
+      { expiresIn: '7d' }
     );
 
-    // Remove password from response
+    // Set HttpOnly cookie
+    const options = {
+      expires: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 days
+      httpOnly: true,
+      secure: process.env.NODE_ENV === 'production',
+      sameSite: process.env.NODE_ENV === 'production' ? 'Strict' : 'Lax'
+    };
+
     user.password = undefined;
 
-    res.status(200).json({
+    res.status(200).cookie('admin_auth', token, options).json({
       success: true,
-      token,
       user: {
         id: user._id,
         name: user.name,
@@ -65,25 +70,60 @@ exports.adminLogin = async (req, res, next) => {
       }
     });
   } catch (error) {
-    console.error('Admin login error:', error);
+    console.error('Login error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error during login'
+      message: 'Server error'
     });
   }
 };
 
-// @desc    Get admin dashboard stats
-// @route   GET /api/admin/stats
-// @access  Private (Admin only)
+exports.adminLogout = async (req, res, next) => {
+  res.cookie('admin_auth', 'none', {
+    expires: new Date(Date.now() + 10 * 1000),
+    httpOnly: true
+  });
+
+  res.status(200).json({
+    success: true,
+    message: 'Logged out successfully'
+  });
+};
+
+exports.getAdminProfile = async (req, res, next) => {
+  try {
+    const user = await User.findById(req.user.id);
+
+    if (!user) {
+      return res.status(404).json({
+        success: false,
+        message: 'User not found'
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      user: {
+        id: user._id,
+        name: user.name,
+        email: user.email,
+        role: user.role
+      }
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
+    });
+  }
+};
+
 exports.getAdminStats = async (req, res, next) => {
   try {
     const Room = require('../models/Room');
 
-    // Get total rooms count
     const totalRooms = await Room.countDocuments();
 
-    // Null-safety: If no rooms exist, return zeros
     if (totalRooms === 0) {
       return res.status(200).json({
         success: true,
@@ -121,29 +161,28 @@ exports.getAdminStats = async (req, res, next) => {
       });
     }
 
-    // Get room status breakdown
     const availableCount = await Room.countDocuments({ status: 'Available' });
     const bookedCount = await Room.countDocuments({ status: 'Booked' });
     const maintenanceCount = await Room.countDocuments({ status: 'Maintenance' });
 
-    // Calculate occupancy rate
-    const occupancyRate = totalRooms > 0 
-      ? Math.round((bookedCount / totalRooms) * 100) 
+    const occupancyRate = totalRooms > 0
+      ? Math.round((bookedCount / totalRooms) * 100)
       : 0;
 
-    // Calculate total revenue from booked rooms
-    const bookedRooms = await Room.find({ status: 'Booked' });
-    const totalRevenue = bookedRooms.reduce((sum, room) => sum + room.price, 0);
+    const revenueAgg = await Room.aggregate([
+      { $match: { status: 'Booked' } },
+      { $group: { _id: null, total: { $sum: '$price' } } }
+    ]);
 
-    // Get all rooms for recent bookings (showing booked rooms)
+    const totalRevenue = revenueAgg[0]?.total || 0;
+
     const recentBookedRooms = await Room.find({ status: 'Booked' })
       .sort({ updatedAt: -1 })
       .limit(5);
 
-    // Format recent bookings
     const recentBookings = recentBookedRooms.map(room => ({
       id: room._id,
-      guestName: 'Guest', // Placeholder - will be replaced when booking system is implemented
+      guestName: 'Guest',
       room: `${room.type} - Room ${room.roomNumber}`,
       checkIn: room.updatedAt.toISOString().split('T')[0],
       status: 'confirmed',
@@ -151,7 +190,6 @@ exports.getAdminStats = async (req, res, next) => {
       priceINR: `₹${room.price.toLocaleString('en-IN')}`
     }));
 
-    // Weekly revenue (placeholder - will be calculated from actual bookings later)
     const weeklyRevenue = [
       { day: 'Mon', revenue: 0 },
       { day: 'Tue', revenue: 0 },
@@ -180,7 +218,7 @@ exports.getAdminStats = async (req, res, next) => {
         Booked: bookedCount,
         Maintenance: maintenanceCount
       },
-      pendingOrders: 0, // Placeholder - will be from orders system
+      pendingOrders: 0,
       reservations: bookedCount,
       weeklyRevenue,
       recentBookings
@@ -191,10 +229,61 @@ exports.getAdminStats = async (req, res, next) => {
       data: stats
     });
   } catch (error) {
-    console.error('Get admin stats error:', error);
     res.status(500).json({
       success: false,
-      message: 'Server error fetching statistics'
+      message: 'Server error'
+    });
+  }
+};
+
+exports.changePassword = async (req, res) => {
+  try {
+    const { currentPassword, newPassword } = req.body;
+    const userId = req.user.id;
+
+    if (!currentPassword || !newPassword) {
+      return res.status(400).json({
+        success: false,
+        message: 'Please provide current and new password'
+      });
+    }
+
+    if (!/^(?=.*[A-Za-z])(?=.*\d).{8,}$/.test(newPassword)) {
+      return res.status(400).json({
+        success: false,
+        message: 'Password must be at least 8 characters long and include both letters and numbers.'
+      });
+    }
+
+    const user = await User.findById(userId).select('+password');
+
+    if (!user) {
+      return res.status(401).json({
+        success: false,
+        message: 'Unauthorized'
+      });
+    }
+
+    const isMatch = await user.comparePassword(currentPassword);
+    if (!isMatch) {
+      return res.status(401).json({
+        success: false,
+        message: 'Incorrect current password'
+      });
+    }
+
+    user.password = newPassword;
+    await user.save();
+
+    res.status(200).json({
+      success: true,
+      message: 'Password updated successfully'
+    });
+
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error'
     });
   }
 };

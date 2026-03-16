@@ -1,14 +1,11 @@
 import axios from 'axios';
 
 // Request interceptor - Attach token to all requests
+// NOTE: With HttpOnly cookies, we don't need to manually attach the token.
+// The browser handles it automatically with `withCredentials: true`.
 axios.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('adminToken');
-    
-    if (token) {
-      config.headers.Authorization = `Bearer ${token}`;
-    }
-    
+    // config.withCredentials = true; // Already set globally in AdminContext, but good to know.
     return config;
   },
   (error) => {
@@ -29,17 +26,18 @@ axios.interceptors.response.use(
         // Clear authentication data
         localStorage.removeItem('adminToken');
         localStorage.removeItem('adminUser');
-        
-        // Redirect to login page
-        window.location.href = '/admin/login';
+
+        // We do NOT redirect globally here anymore.
+        // Protected routes will handle redirects.
+        // Public routes will just fail gracefully (or show generic error).
       }
-      
+
       // Handle 403 Forbidden - Insufficient permissions
       if (error.response.status === 403) {
         console.error('Access forbidden: Insufficient permissions');
       }
     }
-    
+
     return Promise.reject(error);
   }
 );

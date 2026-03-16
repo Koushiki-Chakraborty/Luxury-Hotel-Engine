@@ -31,7 +31,7 @@ const AdminRooms = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const amenitiesList = [
-    'Wi-Fi', 'AC', 'TV', 'Mini Bar', 'Room Service', 
+    'Wi-Fi', 'AC', 'TV', 'Mini Bar', 'Room Service',
     'Balcony', 'Sea View', 'Bathtub', 'Safe', 'Coffee Maker'
   ];
 
@@ -41,9 +41,7 @@ const AdminRooms = () => {
   }, []);
 
   const sortRooms = (roomsToSort) => {
-    return [...roomsToSort].sort((a, b) => 
-      a.roomNumber.localeCompare(b.roomNumber, undefined, { numeric: true })
-    );
+    return [...roomsToSort].sort((a, b) => parseInt(a.roomNumber) - parseInt(b.roomNumber));
   };
 
   const fetchRoomsAndStats = async () => {
@@ -73,14 +71,14 @@ const AdminRooms = () => {
     setIsDeleting(true);
     try {
       await axios.delete(`http://localhost:5000/api/rooms/${deleteModal.room._id}`);
-      
+
       // Remove room from state immediately (optimistic update)
       setRooms(prevRooms => prevRooms.filter(r => r._id !== deleteModal.room._id));
-      
+
       // Refresh stats
       const statsResponse = await axios.get('http://localhost:5000/api/admin/stats');
       setStats(statsResponse.data.data);
-      
+
       setDeleteModal({ isOpen: false, room: null });
       showToast(`Room ${deleteModal.room.roomNumber} deleted successfully`, 'success');
     } catch (error) {
@@ -109,7 +107,7 @@ const AdminRooms = () => {
 
   const handleFormChange = (field, value) => {
     setFormData(prev => ({ ...prev, [field]: value }));
-    
+
     // Clear error for field
     if (formErrors[field]) {
       setFormErrors(prev => ({ ...prev, [field]: '' }));
@@ -274,7 +272,7 @@ const AdminRooms = () => {
       });
 
       // Update room in state (optimistic update) and sort
-      setRooms(prev => sortRooms(prev.map(r => 
+      setRooms(prev => sortRooms(prev.map(r =>
         r._id === editModal.room._id ? response.data.data : r
       )));
 
@@ -315,9 +313,9 @@ const AdminRooms = () => {
     }
   };
 
-  const isFormValid = formData.roomNumber.trim() && 
-                      formData.type && 
-                      formData.price > 0;
+  const isFormValid = formData.roomNumber.trim() &&
+    formData.type &&
+    formData.price > 0;
 
   return (
     <div className="p-6 space-y-6">
@@ -346,15 +344,15 @@ const AdminRooms = () => {
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            className="bg-soft-ivory border-2 border-pale-champagne rounded-lg p-6 shadow-luxury"
+            className="bg-soft-ivory border-2 border-pale-champagne rounded-lg p-4 md:p-6 shadow-luxury flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
               <div>
-                <p className="text-soft-taupe text-sm font-medium">Total Rooms</p>
-                <p className="text-3xl font-bold text-deep-charcoal mt-2">{stats.totalRooms}</p>
+                <p className="text-soft-taupe text-xs md:text-sm font-medium uppercase tracking-wide">Total Rooms</p>
+                <p className="text-2xl md:text-3xl font-bold text-deep-charcoal mt-1 md:mt-2">{stats.totalRooms}</p>
               </div>
-              <div className="w-12 h-12 bg-champagne-gold/10 rounded-lg flex items-center justify-center">
-                <Building2 className="w-6 h-6 text-champagne-gold" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-champagne-gold/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <Building2 className="w-5 h-5 md:w-6 md:h-6 text-champagne-gold" />
               </div>
             </div>
           </motion.div>
@@ -364,18 +362,18 @@ const AdminRooms = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.1 }}
-            className="bg-soft-ivory border-2 border-pale-champagne rounded-lg p-6 shadow-luxury"
+            className="bg-soft-ivory border-2 border-pale-champagne rounded-lg p-4 md:p-6 shadow-luxury flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
               <div>
-                <p className="text-soft-taupe text-sm font-medium">Occupancy Rate</p>
-                <p className="text-3xl font-bold text-deep-charcoal mt-2">{stats.occupancy.rate}%</p>
-                <p className="text-xs text-soft-taupe mt-1">
-                  {stats.occupancy.occupied} of {stats.occupancy.total} rooms
+                <p className="text-soft-taupe text-xs md:text-sm font-medium uppercase tracking-wide">Occupancy</p>
+                <p className="text-2xl md:text-3xl font-bold text-deep-charcoal mt-1 md:mt-2">{stats.occupancy.rate}%</p>
+                <p className="text-[10px] md:text-xs text-soft-taupe mt-1 truncate">
+                  {stats.occupancy.occupied}/{stats.occupancy.total} rooms
                 </p>
               </div>
-              <div className="w-12 h-12 bg-success-green/10 rounded-lg flex items-center justify-center">
-                <TrendingUp className="w-6 h-6 text-success-green" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-success-green/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <TrendingUp className="w-5 h-5 md:w-6 md:h-6 text-success-green" />
               </div>
             </div>
           </motion.div>
@@ -385,16 +383,16 @@ const AdminRooms = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ delay: 0.2 }}
-            className="bg-soft-ivory border-2 border-pale-champagne rounded-lg p-6 shadow-luxury"
+            className="bg-soft-ivory border-2 border-pale-champagne rounded-lg p-4 md:p-6 shadow-luxury col-span-2 md:col-span-1 flex flex-col justify-between"
           >
-            <div className="flex items-center justify-between">
+            <div className="flex items-start justify-between">
               <div>
-                <p className="text-soft-taupe text-sm font-medium">Current Revenue</p>
-                <p className="text-3xl font-bold text-deep-charcoal mt-2">{stats.revenue.totalINR}</p>
-                <p className="text-xs text-soft-taupe mt-1">From booked rooms</p>
+                <p className="text-soft-taupe text-xs md:text-sm font-medium uppercase tracking-wide">Current Revenue</p>
+                <p className="text-2xl md:text-3xl font-bold text-deep-charcoal mt-1 md:mt-2">{stats.revenue.totalINR}</p>
+                <p className="text-[10px] md:text-xs text-soft-taupe mt-1">From booked rooms</p>
               </div>
-              <div className="w-12 h-12 bg-info-navy/10 rounded-lg flex items-center justify-center">
-                <DollarSign className="w-6 h-6 text-info-navy" />
+              <div className="w-10 h-10 md:w-12 md:h-12 bg-info-navy/10 rounded-lg flex items-center justify-center flex-shrink-0">
+                <DollarSign className="w-5 h-5 md:w-6 md:h-6 text-info-navy" />
               </div>
             </div>
           </motion.div>
@@ -433,11 +431,25 @@ const AdminRooms = () => {
                       transition={{ duration: 0.2 }}
                       className="bg-warm-cream border-2 border-pale-champagne rounded-lg overflow-hidden shadow-luxury hover:shadow-luxury-hover transition-shadow"
                     >
+                      {/* Room Number Header - Prominent */}
+                      <div className="bg-gradient-to-r from-soft-ivory to-warm-cream p-3 border-b border-pale-champagne flex justify-between items-center">
+                        <h3 className="text-xl font-playfair font-bold text-deep-charcoal">
+                          Room {room.roomNumber}
+                        </h3>
+                        <span
+                          className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold border ${getStatusBadgeStyles(
+                            room.status
+                          )}`}
+                        >
+                          {room.status}
+                        </span>
+                      </div>
+
                       {/* Room Image - Fixed Aspect Ratio */}
                       <div className="relative aspect-video bg-soft-taupe/10">
                         {room.images && room.images.length > 0 ? (
-                          <img 
-                            src={room.images[0]} 
+                          <img
+                            src={room.images[0]}
                             alt={`Room ${room.roomNumber}`}
                             className="w-full h-full object-cover"
                             onError={(e) => {
@@ -446,37 +458,19 @@ const AdminRooms = () => {
                             }}
                           />
                         ) : null}
-                        <div 
-                          className="absolute inset-0 items-center justify-center bg-soft-ivory" 
+                        <div
+                          className="absolute inset-0 items-center justify-center bg-soft-ivory"
                           style={{ display: room.images && room.images.length > 0 ? 'none' : 'flex' }}
                         >
                           <ImageIcon className="w-12 h-12 text-champagne-gold/50" />
-                        </div>
-                        
-                        {/* Status Badge - Overlay on Image with Semi-Transparent Background */}
-                        <div className="absolute top-3 right-3">
-                          <span
-                            className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-bold backdrop-blur-sm bg-soft-ivory/90 border-2 shadow-lg ${
-                              room.status === 'Available'
-                                ? 'border-success-green text-success-green'
-                                : room.status === 'Booked'
-                                ? 'border-info-navy text-info-navy'
-                                : 'border-soft-taupe text-soft-taupe'
-                            }`}
-                          >
-                            {room.status}
-                          </span>
                         </div>
                       </div>
 
                       {/* Room Info */}
                       <div className="p-4 space-y-3">
-                        {/* Title */}
+                        {/* Title - Removed as it's now in header */}
                         <div>
-                          <h3 className="text-xl font-playfair font-bold text-deep-charcoal">
-                            Room {room.roomNumber}
-                          </h3>
-                          <p className="text-soft-taupe text-sm mt-0.5">{room.type}</p>
+                          <p className="text-soft-taupe text-sm font-medium">{room.type}</p>
                         </div>
 
                         {/* Price Info */}
@@ -563,8 +557,8 @@ const AdminRooms = () => {
                         <td className="px-6 py-4 whitespace-nowrap">
                           <div className="w-16 h-10 rounded-lg overflow-hidden border border-pale-champagne bg-soft-taupe/10 relative group">
                             {room.images && room.images.length > 0 ? (
-                              <img 
-                                src={room.images[0]} 
+                              <img
+                                src={room.images[0]}
                                 alt={`Room ${room.roomNumber}`}
                                 className="w-full h-full object-cover"
                                 onError={(e) => {
@@ -573,11 +567,11 @@ const AdminRooms = () => {
                                 }}
                               />
                             ) : null}
-                            <div 
-                              className="absolute inset-0 items-center justify-center bg-soft-ivory" 
+                            <div
+                              className="absolute inset-0 items-center justify-center bg-soft-ivory"
                               style={{ display: room.images && room.images.length > 0 ? 'none' : 'flex' }}
                             >
-                               <ImageIcon className="w-4 h-4 text-champagne-gold/50" />
+                              <ImageIcon className="w-4 h-4 text-champagne-gold/50" />
                             </div>
                           </div>
                         </td>
@@ -673,9 +667,8 @@ const AdminRooms = () => {
                         type="text"
                         value={formData.roomNumber}
                         onChange={(e) => handleFormChange('roomNumber', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.roomNumber ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.roomNumber ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="e.g., 101"
                       />
                       {formErrors.roomNumber && (
@@ -691,9 +684,8 @@ const AdminRooms = () => {
                       <select
                         value={formData.type}
                         onChange={(e) => handleFormChange('type', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.type ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.type ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                       >
                         <option value="">Select type</option>
                         <option value="Single">Single</option>
@@ -717,9 +709,8 @@ const AdminRooms = () => {
                         type="number"
                         value={formData.price}
                         onChange={(e) => handleFormChange('price', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.price ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.price ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="5000"
                         min="0"
                       />
@@ -741,9 +732,8 @@ const AdminRooms = () => {
                         type="number"
                         value={formData.capacity}
                         onChange={(e) => handleFormChange('capacity', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.capacity ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.capacity ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="2"
                         min="1"
                         max="10"
@@ -831,59 +821,59 @@ const AdminRooms = () => {
                   </div>
                 </div>
 
-                  {/* Images Section */}
-                  <div>
-                    <label className="block text-sm font-medium text-deep-charcoal mb-2">
-                      Room Images
-                    </label>
-                    
-                    {/* Upload Area */}
-                    <div className="border-2 border-dashed border-champagne-gold rounded-lg p-6 text-center hover:bg-warm-cream/50 transition-colors cursor-pointer relative">
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <Upload className="w-8 h-8 text-champagne-gold mx-auto mb-2" />
-                      <p className="text-sm font-medium text-deep-charcoal">Click to upload or drag images here</p>
-                      <p className="text-xs text-soft-taupe mt-1">Supports JPG, PNG, WEBP</p>
-                    </div>
+                {/* Images Section */}
+                <div>
+                  <label className="block text-sm font-medium text-deep-charcoal mb-2">
+                    Room Images
+                  </label>
 
-                    {/* Preview Gallery */}
-                    {formData.images.length > 0 && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                        {formData.images.map((image, index) => (
-                          <div key={index} className="relative group aspect-video bg-soft-taupe/10 rounded-lg overflow-hidden border border-pale-champagne">
-                            <img
-                              src={typeof image === 'string' ? image : URL.createObjectURL(image)}
-                              alt={`Room preview ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-error-burgundy opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  {/* Upload Area */}
+                  <div className="border-2 border-dashed border-champagne-gold rounded-lg p-6 text-center hover:bg-warm-cream/50 transition-colors cursor-pointer relative">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload className="w-8 h-8 text-champagne-gold mx-auto mb-2" />
+                    <p className="text-sm font-medium text-deep-charcoal">Click to upload or drag images here</p>
+                    <p className="text-xs text-soft-taupe mt-1">Supports JPG, PNG, WEBP</p>
                   </div>
+
+                  {/* Preview Gallery */}
+                  {formData.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      {formData.images.map((image, index) => (
+                        <div key={index} className="relative group aspect-video bg-soft-taupe/10 rounded-lg overflow-hidden border border-pale-champagne">
+                          <img
+                            src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                            alt={`Room preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-error-burgundy opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
 
                 {/* Submit Buttons */}
                 <div className="flex flex-col gap-3 pt-4 border-t border-pale-champagne">
                   {isSubmitting && uploadProgress > 0 && (
-                     <div className="w-full bg-pale-champagne rounded-full h-2 mb-2 overflow-hidden">
-                       <div 
-                         className="bg-champagne-gold h-full transition-all duration-300"
-                         style={{ width: `${uploadProgress}%` }}
-                       />
-                     </div>
+                    <div className="w-full bg-pale-champagne rounded-full h-2 mb-2 overflow-hidden">
+                      <div
+                        className="bg-champagne-gold h-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
                   )}
                   <div className="flex gap-3">
                     <button
@@ -974,9 +964,8 @@ const AdminRooms = () => {
                         type="text"
                         value={formData.roomNumber}
                         onChange={(e) => handleFormChange('roomNumber', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.roomNumber ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.roomNumber ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="e.g., 101"
                       />
                       {formErrors.roomNumber && (
@@ -992,9 +981,8 @@ const AdminRooms = () => {
                       <select
                         value={formData.type}
                         onChange={(e) => handleFormChange('type', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.type ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.type ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                       >
                         <option value="">Select type</option>
                         <option value="Single">Single</option>
@@ -1018,9 +1006,8 @@ const AdminRooms = () => {
                         type="number"
                         value={formData.price}
                         onChange={(e) => handleFormChange('price', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.price ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.price ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="5000"
                         min="0"
                       />
@@ -1038,9 +1025,8 @@ const AdminRooms = () => {
                         type="number"
                         value={formData.originalPrice}
                         onChange={(e) => handleFormChange('originalPrice', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.originalPrice ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.originalPrice ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="7000"
                         min="0"
                       />
@@ -1060,9 +1046,8 @@ const AdminRooms = () => {
                         type="number"
                         value={formData.capacity}
                         onChange={(e) => handleFormChange('capacity', e.target.value)}
-                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${
-                          formErrors.capacity ? 'border-error-burgundy' : 'border-pale-champagne'
-                        }`}
+                        className={`w-full px-4 py-2 border-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-champagne-gold ${formErrors.capacity ? 'border-error-burgundy' : 'border-pale-champagne'
+                          }`}
                         placeholder="2"
                         min="1"
                         max="10"
@@ -1151,59 +1136,59 @@ const AdminRooms = () => {
                   </div>
                 </div>
 
-                  {/* Images Section */}
-                  <div>
-                    <label className="block text-sm font-medium text-deep-charcoal mb-2">
-                      Room Images
-                    </label>
-                    
-                    {/* Upload Area */}
-                    <div className="border-2 border-dashed border-champagne-gold rounded-lg p-6 text-center hover:bg-warm-cream/50 transition-colors cursor-pointer relative">
-                      <input
-                        type="file"
-                        multiple
-                        accept="image/*"
-                        onChange={handleImageChange}
-                        className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
-                      />
-                      <Upload className="w-8 h-8 text-champagne-gold mx-auto mb-2" />
-                      <p className="text-sm font-medium text-deep-charcoal">Click to upload or drag images here</p>
-                      <p className="text-xs text-soft-taupe mt-1">Supports JPG, PNG, WEBP</p>
-                    </div>
+                {/* Images Section */}
+                <div>
+                  <label className="block text-sm font-medium text-deep-charcoal mb-2">
+                    Room Images
+                  </label>
 
-                    {/* Preview Gallery */}
-                    {formData.images.length > 0 && (
-                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
-                        {formData.images.map((image, index) => (
-                          <div key={index} className="relative group aspect-video bg-soft-taupe/10 rounded-lg overflow-hidden border border-pale-champagne">
-                            <img
-                              src={typeof image === 'string' ? image : URL.createObjectURL(image)}
-                              alt={`Room preview ${index + 1}`}
-                              className="w-full h-full object-cover"
-                            />
-                            <button
-                              type="button"
-                              onClick={() => removeImage(index)}
-                              className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-error-burgundy opacity-0 group-hover:opacity-100 transition-opacity"
-                            >
-                              <X className="w-4 h-4" />
-                            </button>
-                          </div>
-                        ))}
-                      </div>
-                    )}
+                  {/* Upload Area */}
+                  <div className="border-2 border-dashed border-champagne-gold rounded-lg p-6 text-center hover:bg-warm-cream/50 transition-colors cursor-pointer relative">
+                    <input
+                      type="file"
+                      multiple
+                      accept="image/*"
+                      onChange={handleImageChange}
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                    />
+                    <Upload className="w-8 h-8 text-champagne-gold mx-auto mb-2" />
+                    <p className="text-sm font-medium text-deep-charcoal">Click to upload or drag images here</p>
+                    <p className="text-xs text-soft-taupe mt-1">Supports JPG, PNG, WEBP</p>
                   </div>
+
+                  {/* Preview Gallery */}
+                  {formData.images.length > 0 && (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4">
+                      {formData.images.map((image, index) => (
+                        <div key={index} className="relative group aspect-video bg-soft-taupe/10 rounded-lg overflow-hidden border border-pale-champagne">
+                          <img
+                            src={typeof image === 'string' ? image : URL.createObjectURL(image)}
+                            alt={`Room preview ${index + 1}`}
+                            className="w-full h-full object-cover"
+                          />
+                          <button
+                            type="button"
+                            onClick={() => removeImage(index)}
+                            className="absolute top-1 right-1 p-1 bg-white/80 rounded-full text-error-burgundy opacity-0 group-hover:opacity-100 transition-opacity"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
 
 
                 {/* Submit Buttons */}
                 <div className="flex flex-col gap-3 pt-4 border-t border-pale-champagne">
                   {isSubmitting && uploadProgress > 0 && (
-                     <div className="w-full bg-pale-champagne rounded-full h-2 mb-2 overflow-hidden">
-                       <div 
-                         className="bg-champagne-gold h-full transition-all duration-300"
-                         style={{ width: `${uploadProgress}%` }}
-                       />
-                     </div>
+                    <div className="w-full bg-pale-champagne rounded-full h-2 mb-2 overflow-hidden">
+                      <div
+                        className="bg-champagne-gold h-full transition-all duration-300"
+                        style={{ width: `${uploadProgress}%` }}
+                      />
+                    </div>
                   )}
                   <div className="flex gap-3">
                     <button
@@ -1348,11 +1333,10 @@ const AdminRooms = () => {
             className="fixed bottom-6 right-6 z-50"
           >
             <div
-              className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-luxury-hover ${
-                toast.type === 'success'
-                  ? 'bg-success-green text-white'
-                  : 'bg-error-burgundy text-white'
-              }`}
+              className={`flex items-center gap-3 px-6 py-4 rounded-lg shadow-luxury-hover ${toast.type === 'success'
+                ? 'bg-success-green text-white'
+                : 'bg-error-burgundy text-white'
+                }`}
             >
               {toast.type === 'success' ? (
                 <Check className="w-5 h-5" />

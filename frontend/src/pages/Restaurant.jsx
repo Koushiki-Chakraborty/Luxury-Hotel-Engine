@@ -95,8 +95,8 @@ const Restaurant = () => {
             Our Menu
           </h3>
 
-          {/* PDF Viewer */}
-          <div className="bg-white rounded-lg shadow-luxury border-2 border-pale-champagne overflow-hidden">
+          {/* PDF Viewer - Desktop Only */}
+          <div className="hidden md:block bg-white rounded-lg shadow-luxury border-2 border-pale-champagne overflow-hidden">
             <iframe
               src={`${menuPDF}#view=FitH`}
               width="100%"
@@ -111,20 +111,38 @@ const Restaurant = () => {
             </iframe>
           </div>
 
-          {/* Mobile Fallback & Download Button */}
+          {/* Download/View Button - Mobile (Primary) & Desktop (Secondary) */}
           <div className="mt-6 text-center">
-            <motion.a
-              href={menuPDF}
-              target="_blank"
-              rel="noopener noreferrer"
-              whileHover={{ scale: 1.02 }}
-              whileTap={{ scale: 0.98 }}
-              className="btn-primary inline-flex items-center justify-center space-x-3"
-            >
-              <Download size={20} />
-              <span>View Full Menu (PDF)</span>
-            </motion.a>
-          
+            <div className="md:hidden mb-4">
+              <div className="bg-soft-ivory p-6 rounded-lg border border-pale-champagne shadow-sm">
+                <p className="text-rich-espresso font-lato mb-4">View our full exquisite menu on your device.</p>
+                <motion.a
+                  href={menuPDF}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  whileHover={{ scale: 1.02 }}
+                  whileTap={{ scale: 0.98 }}
+                  className="btn-primary inline-flex items-center justify-center space-x-3 w-full"
+                >
+                  <Download size={20} />
+                  <span>Open Menu (PDF)</span>
+                </motion.a>
+              </div>
+            </div>
+
+            <div className="hidden md:block">
+              <motion.a
+                href={menuPDF}
+                target="_blank"
+                rel="noopener noreferrer"
+                whileHover={{ scale: 1.02 }}
+                whileTap={{ scale: 0.98 }}
+                className="btn-primary inline-flex items-center justify-center space-x-3"
+              >
+                <Download size={20} />
+                <span>View Full Menu (PDF)</span>
+              </motion.a>
+            </div>
           </div>
         </motion.div>
 
@@ -135,12 +153,12 @@ const Restaurant = () => {
             initial={{ opacity: 0, x: -20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.4 }}
-            className="bg-white rounded-lg shadow-luxury p-8"
+            className="bg-white rounded-lg shadow-luxury p-6 md:p-8"
           >
             <h2 className="text-3xl font-playfair font-bold text-deep-charcoal mb-6">
               Make a Reservation
             </h2>
-            
+
             <p className="text-rich-espresso font-lato mb-6 leading-relaxed">
               Reserve your table in advance to ensure the best dining experience. Contact us directly for reservations and special requests.
             </p>
@@ -182,12 +200,12 @@ const Restaurant = () => {
             initial={{ opacity: 0, x: 20 }}
             animate={{ opacity: 1, x: 0 }}
             transition={{ duration: 0.6, delay: 0.6 }}
-            className="bg-white rounded-lg shadow-luxury p-8"
+            className="bg-white rounded-lg shadow-luxury p-6 md:p-8"
           >
             <h2 className="text-3xl font-playfair font-bold text-deep-charcoal mb-6">
               Operating Hours
             </h2>
-            
+
             <div className="space-y-4 font-lato text-rich-espresso">
               <div className="flex justify-between items-center p-4 bg-pale-champagne rounded-lg">
                 <span className="font-medium">Breakfast</span>

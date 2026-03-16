@@ -13,16 +13,16 @@ const FeaturedRooms = () => {
       try {
         setLoading(true);
         const response = await axios.get('http://localhost:5000/api/rooms');
-        
+
         // Access nested data structure
         const roomsArray = response.data.data || [];
-        
+
         // Filter for featured rooms, sort by room number, and limit to 3
         const featuredRooms = roomsArray
           .filter(room => room.isFeatured === true)
           .sort((a, b) => a.roomNumber - b.roomNumber)
           .slice(0, 3);
-        
+
         setRooms(featuredRooms);
       } catch (err) {
         console.error('Error fetching featured rooms:', err);
@@ -55,7 +55,7 @@ const FeaturedRooms = () => {
   };
 
   return (
-    <section className="py-20 bg-warm-cream">
+    <section className="py-12 md:py-20 bg-warm-cream">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Section Header */}
         <motion.div
@@ -122,8 +122,8 @@ const FeaturedRooms = () => {
                     {/* Room Image */}
                     <div className="relative h-72 overflow-hidden bg-gradient-to-br from-rich-espresso to-deep-charcoal">
                       {room.images && room.images.length > 0 ? (
-                        <motion.img 
-                          src={room.images[0]} 
+                        <motion.img
+                          src={room.images[0]}
                           alt={room.type}
                           className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-105"
                           whileHover={{ scale: 1.05 }}

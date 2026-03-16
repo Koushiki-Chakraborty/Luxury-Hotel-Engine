@@ -7,7 +7,8 @@ const {
   getLogStats,
   updateLog,
   checkoutLog,
-  getDueCheckouts
+  getDueCheckouts,
+  resetMonth
 } = require('../controllers/logController');
 
 // @route   POST /api/logs
@@ -44,5 +45,10 @@ router.put('/:id/checkout', checkoutLog);
 // @desc    Delete a log entry
 // @access  Private (Admin)
 router.delete('/:id', deleteLog); // Kept deleteLog directly as per existing pattern
+
+// @route   DELETE /api/logs/reset-month
+// @desc    Archive/Reset Month (Delete all except Active Rooms)
+// @access  Private (Admin)
+router.delete('/reset-month', resetMonth);
 
 module.exports = router;

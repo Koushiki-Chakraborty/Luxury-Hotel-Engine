@@ -6,11 +6,25 @@ const connectDB = require('./config/database');
 // Load environment variables (touched to force restart)
 dotenv.config();
 
+// Security check
+const requiredEnv = ['JWT_SECRET', 'MONGO_URI'];
+
+requiredEnv.forEach(key => {
+  if (!process.env[key]) {
+    throw new Error(`${key} not set in environment variables`);
+  }
+});
+
 // Initialize Express app
 const app = express();
 
+const helmet = require('helmet');
+app.use(helmet());
+
 // Connect to MongoDB
 connectDB();
+
+const cookieParser = require('cookie-parser');
 
 // Middleware
 app.use(cors({
@@ -19,6 +33,7 @@ app.use(cors({
 }));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 // Routes
 app.get('/', (req, res) => {
@@ -43,6 +58,9 @@ app.use('/api/restaurant', restaurantRoutes);
 // Log routes (Digital Logbook)
 app.use('/api/logs', logRoutes);
 
+// Settings routes
+app.use('/api/settings', require('./routes/settingsRoutes'));
+
 // Other routes (will be created later)
 // app.use('/api/auth', require('./routes/auth.routes'));
 // app.use('/api/bookings', require('./routes/booking.routes'));
@@ -52,10 +70,12 @@ app.use('/api/logs', logRoutes);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  if (process.env.NODE_ENV === 'development') {
+    console.error(err.stack);
+  }
   res.status(err.status || 500).json({
     success: false,
-    message: err.message || 'Internal Server Error',
+    message: process.env.NODE_ENV === 'production' ? 'Server error' : err.message || 'Internal Server Error',
     ...(process.env.NODE_ENV === 'development' && { stack: err.stack })
   });
 });
@@ -63,8 +83,8 @@ app.use((err, req, res, next) => {
 // Start server
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📍 Environment: ${process.env.NODE_ENV}`);
+  console.log(` Server running on port ${PORT}`);
+  console.log(` Environment: ${process.env.NODE_ENV}`);
 });
 
 module.exports = app;

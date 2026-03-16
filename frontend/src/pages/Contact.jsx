@@ -53,7 +53,7 @@ const Contact = () => {
             Booking Notice
           </h2>
           <p className="text-lg text-rich-espresso font-lato max-w-3xl mx-auto mb-6 leading-relaxed">
-            Note: To ensure a personalized experience, we do not process direct bookings through our website. 
+            Note: To ensure a personalized experience, we do not process direct bookings through our website.
             You can directly contact us at the number given below or use the Google options to reserve your sanctuary.
           </p>
           <motion.a
@@ -147,7 +147,7 @@ const Contact = () => {
             <h2 className="text-3xl font-playfair font-bold text-deep-charcoal mb-6">
               Find Us
             </h2>
-            <div className="bg-white rounded-lg shadow-luxury overflow-hidden h-[500px]">
+            <div className="bg-white rounded-lg shadow-luxury overflow-hidden h-[400px] md:h-[500px]">
               <iframe
                 src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3657.439!2d87.3606!3d23.4981!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x39f7714344691a67%3A0x51974da1ba588085!2sRudraksh%20Inn%2C%20Durgapur%2C%20West%20Bengal!5e0!3m2!1sen!2sin!4v1738923900000!5m2!1sen!2sin"
                 width="100%"

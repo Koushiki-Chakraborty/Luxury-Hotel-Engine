@@ -1,5 +1,6 @@
 import { createContext, useContext, useState, useEffect } from 'react';
 import axios from 'axios';
+import { useNavigate } from 'react-router-dom';
 
 const AdminContext = createContext();
 
@@ -13,45 +14,58 @@ export const useAdmin = () => {
 
 export const AdminProvider = ({ children }) => {
   const [admin, setAdmin] = useState(null);
-  const [token, setToken] = useState(null);
   const [isAdminAuthenticated, setIsAdminAuthenticated] = useState(false);
   const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
 
-  // Check for existing token on mount
-  useEffect(() => {
-    const storedToken = localStorage.getItem('adminToken');
-    const storedAdmin = localStorage.getItem('adminUser');
+  // Set axios default to verify cookies
+  axios.defaults.withCredentials = true;
 
-    if (storedToken && storedAdmin) {
-      setToken(storedToken);
-      setAdmin(JSON.parse(storedAdmin));
-      setIsAdminAuthenticated(true);
+  const checkAuth = async () => {
+    try {
+      const response = await axios.get(`${import.meta.env.VITE_API_URL}/admin/me`);
+      if (response.data.success) {
+        setAdmin(response.data.user);
+        setIsAdminAuthenticated(true);
+      } else {
+        setIsAdminAuthenticated(false);
+        setAdmin(null);
+      }
+    } catch (error) {
+      if (error.response?.status === 401) {
+        // Expected behavior if user is not logged in.
+        // Just ensure state reflects this.
+        setIsAdminAuthenticated(false);
+        setAdmin(null);
+      } else {
+        console.error('Auth check failed:', error);
+        setIsAdminAuthenticated(false);
+        setAdmin(null);
+      }
+    } finally {
+      setLoading(false);
     }
-    
-    setLoading(false);
+  };
+
+  useEffect(() => {
+    checkAuth();
   }, []);
 
   const login = async (email, password) => {
     try {
-      const response = await axios.post('http://localhost:5000/api/admin/login', {
+      const response = await axios.post(`${import.meta.env.VITE_API_URL}/admin/login`, {
         email,
         password
       });
 
-      const { token: newToken, user } = response.data;
-
-      // Store in state
-      setToken(newToken);
-      setAdmin(user);
-      setIsAdminAuthenticated(true);
-
-      // Store in localStorage
-      localStorage.setItem('adminToken', newToken);
-      localStorage.setItem('adminUser', JSON.stringify(user));
-
-      return { success: true };
+      if (response.data.success) {
+        setAdmin(response.data.user);
+        setIsAdminAuthenticated(true);
+        return { success: true };
+      } else {
+        return { success: false, message: 'Invalid credentials' };
+      }
     } catch (error) {
-      console.error('Admin login error:', error);
       return {
         success: false,
         message: error.response?.data?.message || 'Login failed. Please try again.'
@@ -59,24 +73,26 @@ export const AdminProvider = ({ children }) => {
     }
   };
 
-  const logout = () => {
-    // Clear state
-    setToken(null);
-    setAdmin(null);
-    setIsAdminAuthenticated(false);
-
-    // Clear localStorage
-    localStorage.removeItem('adminToken');
-    localStorage.removeItem('adminUser');
+  const logout = async () => {
+    try {
+      await axios.post(`${import.meta.env.VITE_API_URL}/admin/logout`);
+    } catch (error) {
+      console.error('Logout error:', error);
+    } finally {
+      setAdmin(null);
+      setIsAdminAuthenticated(false);
+      // Cookies are cleared by the backend response
+      navigate('/admin/login');
+    }
   };
 
   const value = {
     admin,
-    token,
     isAdminAuthenticated,
     loading,
     login,
-    logout
+    logout,
+    checkAuth // Exposed in case we need to re-verify manually
   };
 
   return (

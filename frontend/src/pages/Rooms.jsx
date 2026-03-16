@@ -1,6 +1,7 @@
-import { useState, useEffect, useMemo } from 'react';
-import { Link, useSearchParams } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { motion } from 'framer-motion';
+import { ArrowRight } from 'lucide-react';
 import axios from 'axios';
 import RoomCard from '../components/shared/RoomCard';
 
@@ -8,11 +9,6 @@ const Rooms = () => {
   const [rooms, setRooms] = useState([]); // Initialize as empty array
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
-  const [searchParams] = useSearchParams();
-
-  // Get search parameters
-  const isSearchActive = searchParams.get('search') === 'true';
-  const guestCount = parseInt(searchParams.get('guests')) || 2;
 
   useEffect(() => {
     const fetchRooms = async () => {
@@ -20,7 +16,7 @@ const Rooms = () => {
         setLoading(true);
         const response = await axios.get('http://localhost:5000/api/rooms');
         // API returns { success, count, data: [rooms], page, pages, total }
-        setRooms(response.data.data || []); // Extract rooms from data.data
+        setRooms((response.data.data || []).sort((a, b) => parseInt(a.roomNumber) - parseInt(b.roomNumber))); // Extract rooms and sort numerically
         setError(null);
       } catch (err) {
         console.error('Error fetching rooms:', err);
@@ -33,20 +29,6 @@ const Rooms = () => {
     fetchRooms();
   }, []);
 
-  // Filter rooms based on search criteria
-  const filteredRooms = useMemo(() => {
-    if (!isSearchActive) {
-      return rooms; // Show all rooms if no search
-    }
-
-    // Filter for available rooms that can accommodate the guest count
-    return rooms.filter(room => {
-      const isAvailable = room.status === 'Available';
-      // Assuming rooms have a capacity field, adjust if different
-      const hasCapacity = room.capacity >= guestCount || !room.capacity;
-      return isAvailable && hasCapacity;
-    });
-  }, [rooms, isSearchActive, guestCount]);
 
   return (
     <div className="min-h-screen bg-soft-ivory pt-32">{/* Added pt-32 for navbar clearance */}
@@ -64,7 +46,7 @@ const Rooms = () => {
             transition={{ duration: 0.6, delay: 0.2 }}
             className="text-5xl md:text-6xl font-playfair font-bold text-deep-charcoal mb-4 tracking-tight"
           >
-            {isSearchActive ? 'Available Sanctuaries for Your Stay' : 'Our Sanctuaries'}
+            Our Sanctuaries
           </motion.h1>
           <motion.p
             initial={{ opacity: 0, y: 20 }}
@@ -72,16 +54,14 @@ const Rooms = () => {
             transition={{ duration: 0.6, delay: 0.4 }}
             className="text-xl text-rich-espresso font-lato max-w-2xl mx-auto"
           >
-            {isSearchActive 
-              ? `Showing available rooms for ${guestCount} ${guestCount === 1 ? 'guest' : 'guests'}`
-              : 'Discover your perfect retreat. Each room is thoughtfully designed to provide the ultimate in comfort and luxury.'
-            }
+            Discover your perfect retreat. Each room is thoughtfully designed to provide the ultimate in comfort and luxury.
           </motion.p>
         </div>
       </motion.div>
 
       {/* Main Content */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-12">
+
         {/* Error State */}
         {error && (
           <motion.div
@@ -125,14 +105,14 @@ const Rooms = () => {
         )}
 
         {/* Rooms Grid */}
-        {!loading && !error && filteredRooms.length > 0 && (
+        {!loading && !error && rooms.length > 0 && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             transition={{ duration: 0.6 }}
             className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8"
           >
-            {filteredRooms.map((room, index) => (
+            {rooms.map((room, index) => (
               <motion.div
                 key={room._id}
                 initial={{ opacity: 0, y: 20 }}
@@ -146,7 +126,7 @@ const Rooms = () => {
         )}
 
         {/* No Results Message - For Search */}
-        {!loading && !error && isSearchActive && filteredRooms.length === 0 && (
+        {!loading && !error && rooms.length === 0 && (
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
@@ -173,21 +153,7 @@ const Rooms = () => {
           </motion.div>
         )}
 
-        {/* Empty State - For No Search */}
-        {!loading && !error && !isSearchActive && filteredRooms.length === 0 && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="text-center py-16"
-          >
-            <p className="text-2xl font-playfair text-charcoal-gray mb-4">
-              No rooms available at the moment
-            </p>
-            <p className="text-rich-espresso font-lato">
-              Please check back later for available accommodations.
-            </p>
-          </motion.div>
-        )}
+
       </div>
 
       {/* Shimmer Animation CSS */}
